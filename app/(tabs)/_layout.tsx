@@ -1,7 +1,29 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = await AsyncStorage.getItem('access');
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+      const userRes = await fetch("http://127.0.0.1:8000/api/me/", { headers });
+      if (userRes.ok) {
+        const user = await userRes.json();
+        if (user.is_admin) {
+          setIsAdmin(true);
+        }
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <Tabs
       screenOptions={{
@@ -67,6 +89,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      {isAdmin && (
+        <Tabs.Screen
+        name="admin"
+        options={{
+          title: "Admin",
+          tabBarIcon: ({ color }) => <Ionicons name="shield-checkmark" size={22} color={color} />,
+        }}
+      />
+    )}
     </Tabs>
   );
 }

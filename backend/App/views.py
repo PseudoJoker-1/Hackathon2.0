@@ -17,10 +17,22 @@ from rest_framework import viewsets
 from .serializers import RoomSerializer, ReportSerializer
 from django.http import JsonResponse
 import uuid
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from django.utils.timesince import timesince
+from datetime import datetime
 
 # Create your views here.
 def index(request):
     return render(request,'static/main.html')
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_reports(request):
+    user = request.user
+    reports = Report.objects.filter(user=user).order_by('-id')
+    serializer = ReportSerializer(reports, many=True)
+    return Response(serializer.data)
 
 
 class CurrentUserView(APIView):
@@ -33,6 +45,8 @@ class CurrentUserView(APIView):
             'email': request.user.email,
             'vacation_days_left': request.user.vacation_days_left,
             'role' : request.user.role,
+            'points' : request.user.points,
+            'is_Admin' : request.user.is_admin,
         })
 
 class DocumentVS(ModelViewSet):
@@ -109,12 +123,19 @@ def verify_and_register(request):
 
 
 class RoomViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Rooms.objects.all()
     serializer_class = RoomSerializer
 
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class ScoreTransactionVS(ModelViewSet):
     queryset = ScoreTransaction.objects.all()
@@ -147,7 +168,8 @@ class LeaderboardView(APIView):
         return Response(data)
     
 
-
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def redeem_product(request, product_id):
     product = Product.objects.get(id=product_id)
     user = request.user
@@ -162,4 +184,39 @@ def redeem_product(request, product_id):
 
     Redeem.objects.create(user=user, product=product, code = code)
 
-    return JsonResponse({'success': True, 'remaining_points': user.points})
+    return JsonResponse({'success': True, 'remaining_points': user.points, 'code': code })
+
+
+class RecentActivityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        activities = []
+
+        # Reports
+        for r in Report.objects.filter(user=user).order_by('-id')[:5]:
+            activities.append({
+                'type': 'report',
+                'title': r.description[:30],
+                'points': 50,  
+                'status': r.status,
+                'date': timesince(r.created_at or r.pk and datetime.now()) + " ago"
+            })
+
+        # Redeems
+        for redeem in Redeem.objects.filter(user=user).order_by('-id')[:5]:
+            activities.append({
+                'type': 'purchase',
+                'title': f"Redeemed {redeem.product.label}",
+                'points': -redeem.product.price,
+                'status': 'redeemed',
+                'date': timesince(redeem.redeem_date) + " ago"
+            })
+
+
+
+        # Сортируем по времени (новое сверху)
+        activities.sort(key=lambda x: x['date'], reverse=False)
+
+        return Response(activities[:10])

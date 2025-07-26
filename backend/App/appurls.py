@@ -15,4 +15,5 @@ router.register(r'users', UserVS, basename='user')
 router.register(r'score-transactions', ScoreTransactionVS, basename='scoretransaction')
 router.register(r'product', ProductVS, basename="product")
 
+
 urlpatterns = router.urls

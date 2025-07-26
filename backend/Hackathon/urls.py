@@ -25,6 +25,11 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 
 )
+from App.views import LeaderboardView
+from App.views import redeem_product
+from App.views import RecentActivityView
+from App.views import my_reports
+
 
 
 urlpatterns = [
@@ -35,5 +40,9 @@ urlpatterns = [
     path('api/send-code/',     views.send_verification_code,   name='send_code'),
     path('api/verify-register/', views.verify_and_register,   name='verify_register'),
     path('api/me/', views.CurrentUserView.as_view()),
+    path('api/leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
+    path('api/redeem/<int:product_id>/', redeem_product, name='redeem-product'),
+    path('api/recent-activity/', RecentActivityView.as_view(), name='recent-activity'),
+    path('api/my-reports/', my_reports, name='my-reports'),
     path('api/',include('App.appurls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

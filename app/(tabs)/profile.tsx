@@ -1,36 +1,73 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '../context/HomeScreen_protected';
 
-const achievements = [
-  { id: 1, name: 'First Reporter', description: 'Submitted your first report', icon: 'ribbon', earned: true },
-  { id: 2, name: 'Problem Solver', description: 'Reported 10 issues', icon: 'trophy', earned: true },
-  { id: 3, name: 'Streak Master', description: 'Reported for 7 days straight', icon: 'calendar', earned: true },
-  { id: 4, name: 'Top Contributor', description: 'Reach top 10 leaderboard', icon: 'trophy', earned: false },
-];
+interface Report {
+  id: number;
+  description: string;
+  status: string;
+  report_type: string;
+  created_at?: string;
+}
 
-const recentActivity = [
-  { id: 1, type: 'report', title: 'Broken Light in Library', points: 50, date: '2 hours ago', status: 'pending' },
-  { id: 2, type: 'resolved', title: 'Water Leak Fixed', points: 75, date: 'Yesterday', status: 'resolved' },
-  { id: 3, type: 'purchase', title: 'Redeemed Free Coffee', points: -200, date: '2 days ago', status: 'redeemed' },
-  { id: 4, type: 'report', title: 'WiFi Issue in Dorm', points: 50, date: '3 days ago', status: 'resolved' },
-];
+interface UserData {
+  FIO: string;
+  points: number;
+  rank: number;
+}
 
 function ProfileScreen() {
-  const [userStats] = useState({
-    name: 'Alex Johnson',
-    points: 1250,
-    rank: 3,
-    totalReports: 16,
-    resolvedReports: 12,
-    joinDate: 'September 2024',
-  });
+  const [user, setUser] = useState<UserData | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async () => {
+    const token = await AsyncStorage.getItem('access');
+    try {
+      const [meRes, reportsRes] = await Promise.all([
+        fetch('http://127.0.0.1:8000/api/me/', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch('http://127.0.0.1:8000/api/reports/', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const userData = await meRes.json();
+      const reportData = await reportsRes.json();
+
+      setUser({
+        FIO: userData.FIO || userData.username,
+        points: userData.points,
+        rank: 3 // можно заменить реальным ранком, если доступен
+      });
+
+      // фильтрация только пользовательских репортов
+      const myReports = reportData.filter((r: any) => r.user === userData.id);
+      setReports(myReports);
+    } catch (e) {
+      console.error('Error loading profile', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  if (loading || !user) return <ActivityIndicator size="large" style={{ flex: 1 }} color="#2563EB" />;
+
+  const totalReports = reports.length;
+  const resolvedReports = reports.filter(r => r.status === 'resolved').length;
+  const successRate = totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.profileSection}>
@@ -38,13 +75,9 @@ function ProfileScreen() {
               <Ionicons name="person" size={32} color="white" />
             </View>
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userStats.name}</Text>
-              <Text style={styles.joinDate}>Member since {userStats.joinDate}</Text>
+              <Text style={styles.userName}>{user.FIO}</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Ionicons name="settings" size={24} color="#6B7280" />
-          </TouchableOpacity>
         </View>
 
         {/* Stats Cards */}
@@ -54,7 +87,7 @@ function ProfileScreen() {
               <Ionicons name="star" size={20} color="#F59E0B" />
               <Text style={styles.statLabel}>Points</Text>
             </View>
-            <Text style={styles.statValue}>{userStats.points.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{user.points}</Text>
             <Text style={styles.statChange}>+150 this week</Text>
           </View>
 
@@ -63,12 +96,12 @@ function ProfileScreen() {
               <Ionicons name="trending-up" size={20} color="#10B981" />
               <Text style={styles.statLabel}>Rank</Text>
             </View>
-            <Text style={styles.statValue}>#{userStats.rank}</Text>
+            <Text style={styles.statValue}>#{user.rank}</Text>
             <Text style={styles.statChange}>+1 from last week</Text>
           </View>
         </View>
 
-        {/* Report Stats */}
+        {/* Report Statistics */}
         <View style={styles.reportStatsCard}>
           <Text style={styles.cardTitle}>Report Statistics</Text>
           <View style={styles.reportStatsGrid}>
@@ -76,109 +109,52 @@ function ProfileScreen() {
               <View style={styles.reportStatIcon}>
                 <Ionicons name="time" size={16} color="#3B82F6" />
               </View>
-              <Text style={styles.reportStatNumber}>{userStats.totalReports}</Text>
+              <Text style={styles.reportStatNumber}>{totalReports}</Text>
               <Text style={styles.reportStatLabel}>Total Reports</Text>
             </View>
             <View style={styles.reportStat}>
               <View style={styles.reportStatIcon}>
                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
               </View>
-              <Text style={styles.reportStatNumber}>{userStats.resolvedReports}</Text>
+              <Text style={styles.reportStatNumber}>{resolvedReports}</Text>
               <Text style={styles.reportStatLabel}>Resolved</Text>
             </View>
             <View style={styles.reportStat}>
               <View style={styles.reportStatIcon}>
                 <Ionicons name="trophy" size={16} color="#F59E0B" />
               </View>
-              <Text style={styles.reportStatNumber}>
-                {Math.round((userStats.resolvedReports / userStats.totalReports) * 100)}%
-              </Text>
+              <Text style={styles.reportStatNumber}>{successRate}%</Text>
               <Text style={styles.reportStatLabel}>Success Rate</Text>
             </View>
-          </View>
-        </View>
-
-        {/* Achievements */}
-        <View style={styles.achievementsCard}>
-          <Text style={styles.cardTitle}>Achievements</Text>
-          <View style={styles.achievementsGrid}>
-            {achievements.map((achievement) => (
-              <View key={achievement.id} style={[
-                styles.achievementItem,
-                !achievement.earned && styles.achievementLocked
-              ]}>
-                <View style={[
-                  styles.achievementIcon,
-                  { backgroundColor: achievement.earned ? '#10B981' : '#E5E7EB' }
-                ]}>
-                  <Ionicons 
-                    name={achievement.icon as any}
-                    size={16} 
-                    color={achievement.earned ? 'white' : '#9CA3AF'} 
-                  />
-                </View>
-                <View style={styles.achievementInfo}>
-                  <Text style={[
-                    styles.achievementName,
-                    !achievement.earned && styles.achievementNameLocked
-                  ]}>
-                    {achievement.name}
-                  </Text>
-                  <Text style={styles.achievementDescription}>
-                    {achievement.description}
-                  </Text>
-                </View>
-              </View>
-            ))}
           </View>
         </View>
 
         {/* Recent Activity */}
         <View style={styles.activityCard}>
           <Text style={styles.cardTitle}>Recent Activity</Text>
-          {recentActivity.map((activity) => (
-            <View key={activity.id} style={styles.activityItem}>
+          {reports.slice(0, 4).map((r) => (
+            <View key={r.id} style={styles.activityItem}>
               <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>{activity.title}</Text>
-                <Text style={styles.activityDate}>{activity.date}</Text>
+                <Text style={styles.activityTitle}>{r.description}</Text>
+                <Text style={styles.activityDate}>{r.status}</Text>
               </View>
               <View style={styles.activityPoints}>
-                <Text style={[
-                  styles.activityPointsText,
-                  { color: activity.points > 0 ? '#10B981' : '#6B7280' }
-                ]}>
-                  {activity.points > 0 ? '+' : ''}{activity.points}
-                </Text>
+                <Ionicons
+                  name={
+                    r.status === 'resolved'
+                      ? 'checkmark-circle'
+                      : r.status === 'pending'
+                      ? 'time'
+                      : 'alert-circle'
+                  }
+                  size={18}
+                  color={
+                    r.status === 'resolved' ? '#10B981' : r.status === 'pending' ? '#F59E0B' : '#EF4444'
+                  }
+                />
               </View>
             </View>
           ))}
-        </View>
-
-        {/* Menu Items */}
-        <View style={styles.menuCard}>
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="time" size={20} color="#6B7280" />
-              <Text style={styles.menuItemText}>My Reports</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="trophy" size={20} color="#6B7280" />
-              <Text style={styles.menuItemText}>All Achievements</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="settings" size={20} color="#6B7280" />
-              <Text style={styles.menuItemText}>Settings</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.bottomPadding} />
@@ -186,28 +162,19 @@ function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
 export default withAuthProtection(ProfileScreen);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  scrollView: { flex: 1, paddingHorizontal: 20 },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 24,
   },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  profileSection: { flexDirection: 'row', alignItems: 'center' },
   avatar: {
     width: 60,
     height: 60,
@@ -217,27 +184,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 16,
   },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  joinDate: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  settingsButton: {
-    padding: 8,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
+  userInfo: { flex: 1 },
+  userName: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 4 },
+
+  statsContainer: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   statCard: {
     flex: 1,
     backgroundColor: 'white',
@@ -249,28 +199,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  statChange: {
-    fontSize: 12,
-    color: '#10B981',
-    fontWeight: '500',
-  },
+  statHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  statLabel: { fontSize: 14, color: '#6B7280', fontWeight: '500', marginLeft: 8 },
+  statValue: { fontSize: 24, fontWeight: '700', color: '#111827', marginBottom: 4 },
+  statChange: { fontSize: 12, color: '#10B981', fontWeight: '500' },
+
   reportStatsCard: {
     backgroundColor: 'white',
     padding: 20,
@@ -282,78 +215,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  reportStatsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  reportStat: {
-    alignItems: 'center',
-  },
-  reportStatIcon: {
-    marginBottom: 8,
-  },
-  reportStatNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  reportStatLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  achievementsCard: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  achievementsGrid: {
-    gap: 16,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  achievementLocked: {
-    opacity: 0.6,
-  },
-  achievementIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  achievementInfo: {
-    flex: 1,
-  },
-  achievementName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  achievementNameLocked: {
-    color: '#9CA3AF',
-  },
-  achievementDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: '#111827', marginBottom: 16 },
+  reportStatsGrid: { flexDirection: 'row', justifyContent: 'space-between' },
+  reportStat: { alignItems: 'center' },
+  reportStatIcon: { marginBottom: 8 },
+  reportStatNumber: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 4 },
+  reportStatLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
+
   activityCard: {
     backgroundColor: 'white',
     padding: 20,
@@ -373,54 +241,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  activityDate: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  activityPoints: {
-    marginLeft: 12,
-  },
-  activityPointsText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  menuCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
-    marginLeft: 12,
-  },
-  bottomPadding: {
-    height: 20,
-  },
+  activityContent: { flex: 1 },
+  activityTitle: { fontSize: 16, fontWeight: '500', color: '#111827', marginBottom: 2 },
+  activityDate: { fontSize: 14, color: '#6B7280' },
+  activityPoints: { marginLeft: 12 },
+  bottomPadding: { height: 20 },
 });

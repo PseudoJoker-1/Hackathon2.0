@@ -156,15 +156,22 @@ class Report(models.Model):
         ('light', 'Light Issue'),
         ('other', 'Other'),
     ]
+    STATUS_TYPES = [
+        ('pending','Pending'),
+        ('resolved','Resolved'),
+        ('urgent','Urgent')
+    ]
     room = models.ForeignKey(Rooms, related_name='reports', on_delete=models.CASCADE)
     report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
-    description = models.TextField()
-
+    description = models.TextField(max_length=250)
+    status = models.CharField(max_length=50,choices=STATUS_TYPES,default='Pending')
+    attachment = models.FileField(upload_to='documents/',null=True,blank=True)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk and self.user:
             self.user.points = (self.user.points or 0) +1 
             self.user.save()
-        super.save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 class Product(models.Model):
     name = models.CharField(max_length = 50, unique = True, blank=True, null=True)

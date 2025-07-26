@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '../context/HomeScreen_protected';
 
 const issueTypes = [
@@ -13,270 +14,205 @@ const issueTypes = [
   { id: 'other', name: 'Other', icon: 'warning', color: '#6B7280' },
 ];
 
+interface Room {
+  id: number;
+  number: number;
+}
+
 function ReportScreen() {
   const [selectedIssue, setSelectedIssue] = useState<string | null>(null);
-  const [room, setRoom] = useState('');
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomId, setRoomId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = () => {
-    if (!selectedIssue || !room || !description) {
-      Alert.alert('Missing Information', 'Please fill in all fields to submit your report.');
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const token = await AsyncStorage.getItem('access');
+        const res = await fetch('http://127.0.0.1:8000/api/rooms/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error('Failed to fetch rooms');
+        }
+        console.log('Rooms:', data);
+        setRooms(data);
+      } catch (err) {
+        console.error('Failed to load rooms:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!selectedIssue || !roomId || !description) {
+      Alert.alert('Missing Information', 'Please fill in all fields.');
       return;
     }
-    
-    Alert.alert(
-      'Report Submitted!',
-      'Thank you for your report. You\'ve earned 50 points! Our team will address this issue soon.',
-      [{ text: 'OK' }]
-    );
-    
-    // Reset form
-    setSelectedIssue(null);
-    setRoom('');
-    setDescription('');
+
+    try {
+      const token = await AsyncStorage.getItem('access');
+      const response = await fetch('http://127.0.0.1:8000/api/reports/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          report_type: selectedIssue,
+          room: roomId,
+          description: description,
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!');
+        setSelectedIssue(null);
+        setRoomId(null);
+        setDescription('');
+      } else {
+        console.log(await response.text());
+        Alert.alert('Error', 'Failed to submit the report.');
+      }
+    } catch (err) {
+      console.error('Submit error:', err);
+      Alert.alert('Error', 'Something went wrong.');
+    }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Report an Issue</Text>
-          <Text style={styles.subtitle}>Help us improve campus facilities</Text>
+      <ScrollView style={styles.scrollView}>
+        <Text style={styles.title}>Report an Issue</Text>
+
+        {/* Issue type */}
+        <Text style={styles.label}>Issue Type</Text>
+        <View style={styles.issueGrid}>
+          {issueTypes.map(issue => (
+            <TouchableOpacity
+              key={issue.id}
+              style={[
+                styles.issueCard,
+                selectedIssue === issue.id && styles.issueCardSelected,
+              ]}
+              onPress={() => setSelectedIssue(issue.id)}
+            >
+              <Ionicons name={issue.icon as any} size={20} color={issue.color} />
+              <Text style={{ color: selectedIssue === issue.id ? issue.color : '#374151' }}>
+                {issue.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Issue Type Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What type of issue?</Text>
-          <View style={styles.issueGrid}>
-            {issueTypes.map((issue) => (
-              <TouchableOpacity
-                key={issue.id}
-                style={[
-                  styles.issueCard,
-                  selectedIssue === issue.id && styles.issueCardSelected
-                ]}
-                onPress={() => setSelectedIssue(issue.id)}
-              >
-                <View style={[styles.issueIcon, { backgroundColor: `${issue.color}20` }]}>
-                  <Ionicons name={issue.icon as any} size={24} color={issue.color} />
-                </View>
-                <Text style={[
-                  styles.issueText,
-                  selectedIssue === issue.id && styles.issueTextSelected
-                ]}>
-                  {issue.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        {/* Room selection */}
+        <Text style={styles.label}>Room</Text>
+        {rooms.map(room => (
+          <TouchableOpacity
+            key={room.id}
+            style={[
+              styles.roomOption,
+              roomId === room.id && styles.roomSelected,
+            ]}
+            onPress={() => setRoomId(room.id)}
+          >
+            <Text style={styles.roomText}>Room {room.number}</Text>
+          </TouchableOpacity>
+        ))}
 
-        {/* Room/Location Input */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Room or Location</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="location" size={20} color="#6B7280" />
-            <TextInput
-              style={styles.textInput}
-              placeholder="e.g., Library Room 204A, Main Hall"
-              value={room}
-              onChangeText={setRoom}
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-        </View>
+        {/* Description */}
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          placeholder="Describe the issue in detail"
+          value={description}
+          onChangeText={setDescription}
+        />
 
-        {/* Description Input */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <TextInput
-            style={styles.textAreaInput}
-            placeholder="Describe the issue in detail..."
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
-
-        {/* Photo Upload Button */}
-        <TouchableOpacity style={styles.photoButton}>
-          <Ionicons name="camera" size={20} color="#6B7280" />
-          <Text style={styles.photoButtonText}>Add Photo (Optional)</Text>
+        {/* Submit button */}
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Ionicons name="send" size={18} color="white" />
+          <Text style={styles.submitText}>Submit Report</Text>
         </TouchableOpacity>
-
-        {/* Points Preview */}
-        <View style={styles.pointsPreview}>
-          <Text style={styles.pointsText}>🎯 You'll earn 50 points for this report!</Text>
-        </View>
-
-        {/* Submit Button */}
-        <TouchableOpacity 
-          style={[styles.submitButton, (!selectedIssue || !room || !description) && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={!selectedIssue || !room || !description}
-        >
-          <Ionicons name="send" size={20} color="white" />
-          <Text style={styles.submitButtonText}>Submit Report</Text>
-        </TouchableOpacity>
-
-        <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
 export default withAuthProtection(ReportScreen);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginTop: 20,
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  issueGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  scrollView: { padding: 20 },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
+  label: { fontSize: 16, fontWeight: '600', marginTop: 20, marginBottom: 8 },
+  issueGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   issueCard: {
-    width: '47%',
     backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 12,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    width: '47%',
+    flexDirection: 'row',
+    gap: 8,
   },
   issueCardSelected: {
     borderColor: '#2563EB',
     backgroundColor: '#EFF6FF',
   },
-  issueIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+  roomOption: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 12,
+    borderRadius: 12,
     marginBottom: 8,
   },
-  issueText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    textAlign: 'center',
+  roomSelected: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
   },
-  issueTextSelected: {
-    color: '#2563EB',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  roomText: { fontSize: 16, color: '#111827' },
+  input: {
     backgroundColor: 'white',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-  },
-  textInput: {
-    flex: 1,
+    padding: 12,
     fontSize: 16,
-    color: '#111827',
-    marginLeft: 12,
-  },
-  textAreaInput: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    fontSize: 16,
-    color: '#111827',
+    textAlignVertical: 'top',
     minHeight: 100,
   },
-  photoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    borderStyle: 'dashed',
-    marginBottom: 24,
-  },
-  photoButtonText: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  pointsPreview: {
-    backgroundColor: '#FEF3C7',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 24,
-  },
-  pointsText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#D97706',
-    textAlign: 'center',
-  },
   submitButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#2563EB',
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginBottom: 20,
+    marginTop: 24,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-  },
-  submitButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
+  submitText: {
     color: 'white',
-    marginLeft: 8,
-  },
-  bottomPadding: {
-    height: 20,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
