@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '../context/HomeScreen_protected';
 import { usePoints } from '../context/PointsContext';
-
+import { useFocusEffect } from '@react-navigation/native';
+import { fetchPoints } from '../context/PointsContext';
 interface Report {
   id: number;
   report_type: string;
@@ -22,12 +23,13 @@ interface Leader {
 
 const HomeScreen = () => {
   const [username, setUsername] = useState('');
-  const { points } = usePoints(); 
+  const { points, fetchPoints } = usePoints(); 
   const [stats, setStats] = useState({ resolved: 0, pending: 0, urgent: 0 });
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false); 
+  
   const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
 
   const fetchData = useCallback(async () => {
@@ -65,9 +67,12 @@ const HomeScreen = () => {
     }
   }, [points]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+      fetchPoints();
+    }, [fetchData,fetchPoints])
+  );
 
   if (loading) {
     return (
@@ -76,7 +81,7 @@ const HomeScreen = () => {
       </SafeAreaView>
     );
   }
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -138,7 +143,11 @@ const StatCard = ({ icon, color, label, value }: { icon: any; color: string; lab
   </View>
 );
 
+
+
 export default withAuthProtection(HomeScreen);
+
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
