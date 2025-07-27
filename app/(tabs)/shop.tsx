@@ -8,6 +8,7 @@ import { Modal } from 'react-native';
 
 
 interface Product {
+  id: number | string;
   name: string;
   label: string;
   price: number;
