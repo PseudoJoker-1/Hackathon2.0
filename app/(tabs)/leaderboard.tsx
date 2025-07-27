@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import withAuthProtection from '../context/HomeScreen_protected';
+import { usePoints } from '../context/PointsContext';
 
 interface Leader {
   id: number;
@@ -13,11 +14,11 @@ interface Leader {
 const LeaderboardScreen = () => {
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/leaderboard/');
+        const res = await fetch(`${BASE_URL}/api/leaderboard/`);
         const data = await res.json();
         setLeaders(data);
       } catch (err) {

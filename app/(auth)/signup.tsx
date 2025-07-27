@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -21,16 +22,24 @@ export default function SignUpScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
   const [showCodeField, setShowCode] = useState<boolean>(false);
-
   const requestCode = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
     try {
-      const res = await fetch('http://localhost:8000/api/send-code/', {
+      const res = await fetch(`${BASE_URL}/api/send-code/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+      const errorText = await res.text();
       if (res.ok) setShowCode(true);
-      else Alert.alert('Ошибка', 'Не удалось отправить код');
+      else Alert.alert('Ошибка', errorText);
     } catch (err) {
       Alert.alert('Ошибка', 'Сервер не отвечает');
     }
@@ -38,7 +47,7 @@ export default function SignUpScreen() {
 
   const loginAndSaveTokens = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/token/', {
+      const res = await fetch(`${BASE_URL}/api/token/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -64,7 +73,7 @@ export default function SignUpScreen() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:8000/api/verify-register/', {
+      const res = await fetch(`${BASE_URL}/api/verify-register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: name, email, password, code }),
@@ -89,7 +98,7 @@ export default function SignUpScreen() {
 
       <View style={styles.header}>
         <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join Superior University today</Text>
+        <Text style={styles.subtitle}>Join Coventry Campus today!</Text>
       </View>
 
       <View style={styles.form}>

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '../context/HomeScreen_protected';
+import { usePoints } from '../context/PointsContext';
 
 interface Report {
   id: number;
@@ -22,54 +22,52 @@ interface Leader {
 
 const HomeScreen = () => {
   const [username, setUsername] = useState('');
-  const [points, setPoints] = useState(0);
+  const { points } = usePoints(); 
   const [stats, setStats] = useState({ resolved: 0, pending: 0, urgent: 0 });
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [leaderboard, setLeaderboard] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false); // <-- Add this line
+  const [isAdmin, setIsAdmin] = useState(false); 
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
+
+  const fetchData = useCallback(async () => {
+    const token = await AsyncStorage.getItem('access');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      const [userRes, reportRes, leaderRes] = await Promise.all([
+        fetch(`${BASE_URL}/api/me/`, { headers }),
+        fetch(`${BASE_URL}/api/reports/`, { headers }),
+        fetch(`${BASE_URL}/api/leaderboard/`, { headers }),
+      ]);
+
+      const userData = await userRes.json();
+      setUsername(userData.username || 'User');
+      setIsAdmin(userData.is_admin === true);
+
+      const reports: Report[] = await reportRes.json();
+      const resolved = reports.filter(r => r.status === 'resolved').length;
+      const pending = reports.filter(r => r.status === 'pending').length;
+      const urgent = reports.filter(r => r.status === 'urgent').length;
+      setStats({ resolved, pending, urgent });
+      setRecentReports(reports.slice(0, 2));
+
+      const leaders: Leader[] = await leaderRes.json();
+      setLeaderboard(leaders.slice(0, 3));
+    } catch (error) {
+      console.error('API error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [points]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = await AsyncStorage.getItem('access');
-      if (!token) {
-        console.error('No token found, redirecting to login');
-        setLoading(false);
-        return;
-      }
-
-      const headers = { Authorization: `Bearer ${token}` };
-
-      try {
-        const [userRes, reportRes, leaderRes] = await Promise.all([
-          fetch('http://127.0.0.1:8000/api/me/', { headers }),
-          fetch('http://127.0.0.1:8000/api/reports/', { headers }),
-          fetch('http://127.0.0.1:8000/api/leaderboard/', { headers }),
-        ]);
-
-        const userData = await userRes.json();
-        setUsername(userData.username || 'User');
-        setPoints(userData.points || 0);
-        setIsAdmin(userData.is_admin === true); // <-- Set admin state
-
-        const reports: Report[] = await reportRes.json();
-        const resolved = reports.filter(r => r.status === 'resolved').length;
-        const pending = reports.filter(r => r.status === 'pending').length;
-        const urgent = reports.filter(r => r.status === 'urgent').length;
-        setStats({ resolved, pending, urgent });
-        setRecentReports(reports.slice(0, 2));
-
-        const leaders: Leader[] = await leaderRes.json();
-        setLeaderboard(leaders.slice(0, 3));
-      } catch (error) {
-        console.error('API error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -82,7 +80,6 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Good morning,</Text>
@@ -94,7 +91,6 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* Stats - Only show for admins */}
         {isAdmin && (
           <View style={styles.statsContainer}>
             <StatCard icon="checkmark-circle" color="#10B981" label="Resolved" value={stats.resolved} />
@@ -103,7 +99,6 @@ const HomeScreen = () => {
           </View>
         )}
 
-        {/* Recent Reports */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Reports</Text>
           {recentReports.map((r) => (
@@ -118,7 +113,6 @@ const HomeScreen = () => {
           ))}
         </View>
 
-        {/* Leaderboard */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Contributors</Text>
           {leaderboard.map((user, idx) => (

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Use official Python image
 FROM python:3.11-slim
 
@@ -20,3 +21,19 @@ RUN python manage.py collectstatic --noinput
 
 # Start with gunicorn
 CMD ["gunicorn", "Hackathon.wsgi:application", "--bind", "0.0.0.0:$PORT"]
+=======
+FROM python:3.10
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+COPY . /app
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+COPY db.sqlite3 /app/db.sqlite3
+RUN python manage.py collectstatic --noinput
+
+CMD gunicorn Hackathon.wsgi:application --bind 0.0.0.0:$PORT
+>>>>>>> 5663f63 (Added a lot of things)

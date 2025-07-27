@@ -29,6 +29,7 @@ function ShopScreen() {
   const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
 
   const colorMap: any = {
     coffee: '#F59E0B',
@@ -53,10 +54,10 @@ function ShopScreen() {
       const token = await AsyncStorage.getItem('access');
       try {
         const [meRes, productRes] = await Promise.all([
-          fetch('http://127.0.0.1:8000/api/me/', {
+          fetch(`${BASE_URL}/api/me/`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch('http://127.0.0.1:8000/api/product/', {
+          fetch(`${BASE_URL}/api/product/`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -79,7 +80,7 @@ function ShopScreen() {
   const redeemItem = async (product: Product) => {
     const token = await AsyncStorage.getItem('access');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/redeem/${product.id}/`, {
+      const res = await fetch(`${BASE_URL}/api/redeem/${product.id}/`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

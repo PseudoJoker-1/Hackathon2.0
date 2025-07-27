@@ -19,13 +19,14 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminsScreen() {
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     const token = await AsyncStorage.getItem('access');
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/reports/', {
+      const res = await fetch(`${BASE_URL}/api/reports/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -40,7 +41,7 @@ export default function AdminsScreen() {
   const updateStatus = async (id: number, newStatus: string) => {
     const token = await AsyncStorage.getItem('access');
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/reports/${id}/`, {
+      const res = await fetch(`${BASE_URL}/api/reports/${id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

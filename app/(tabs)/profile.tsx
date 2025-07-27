@@ -23,15 +23,16 @@ function ProfileScreen() {
   const [user, setUser] = useState<UserData | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
 
   const fetchProfile = async () => {
     const token = await AsyncStorage.getItem('access');
     try {
       const [meRes, reportsRes] = await Promise.all([
-        fetch('http://127.0.0.1:8000/api/me/', {
+        fetch(`${BASE_URL}/api/me/`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://127.0.0.1:8000/api/reports/', {
+        fetch(`${BASE_URL}/api/reports/`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);

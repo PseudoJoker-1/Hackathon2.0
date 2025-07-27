@@ -77,9 +77,9 @@ class SendCodeSerializer(serializers.Serializer):
         ev = Sendcode.objects.create(email=email,code=code)
 
         send_mail(
-            "Ваш код подтверждения",
-            f"Ваш проверочный код: {code}"
-            " Срок действия 10 минут",
+            "Your verification code",
+            f"Code: {code}"
+            " The code lasts 10 minutes",
             "armaha2302@gmail.com",
             [email]
 

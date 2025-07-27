@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignInScreen() {
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,7 @@ export default function SignInScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    const url = 'http://localhost:8000/api/token/';
+    const url = `${BASE_URL}/api/token/`;
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -109,6 +110,7 @@ export default function SignInScreen() {
           <Text style={styles.dividerText}>or</Text>
           <View style={styles.dividerLine} />
         </View>
+
 {/* 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
           <Text style={styles.socialButtonText}>Log in with Google</Text>

@@ -25,12 +25,13 @@ function ReportScreen() {
   const [roomId, setRoomId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         const token = await AsyncStorage.getItem('access');
-        const res = await fetch('http://127.0.0.1:8000/api/rooms/', {
+        const res = await fetch(`${BASE_URL}/api/rooms/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -58,7 +59,7 @@ function ReportScreen() {
 
     try {
       const token = await AsyncStorage.getItem('access');
-      const response = await fetch('http://127.0.0.1:8000/api/reports/', {
+      const response = await fetch(`${BASE_URL}/api/reports/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
