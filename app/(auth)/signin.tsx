@@ -49,13 +49,13 @@ export default function SignInScreen() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    router.replace('/(tabs)');
-  };
+  // const handleGoogleSignIn = () => {
+  //   router.replace('/(tabs)');
+  // };
 
-  const handleFacebookSignIn = () => {
-    router.replace('/(tabs)');
-  };
+  // const handleFacebookSignIn = () => {
+  //   router.replace('/(tabs)');
+  // };
 
   return (
     <View style={styles.container}>
@@ -109,14 +109,14 @@ export default function SignInScreen() {
           <Text style={styles.dividerText}>or</Text>
           <View style={styles.dividerLine} />
         </View>
-
+{/* 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
           <Text style={styles.socialButtonText}>Log in with Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.facebookButton} onPress={handleFacebookSignIn}>
           <Text style={[styles.socialButtonText, { color: '#FFFFFF' }]}>Log in with Facebook</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
