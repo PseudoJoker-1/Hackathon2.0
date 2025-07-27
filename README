@@ -1,91 +1,93 @@
-# Superior University Hackathon 2.0
 
-## Описание
- это современное мобильное приложение для студентов и сотрудников кампуса, позволяющее:
-- Сообщать о проблемах (поломки, WiFi, вода и др.)
-- Получать баллы за активность и обменивать их на призы
-- Следить за личной статистикой и рейтингом
-- Просматривать топ участников и активность кампуса
-- Администраторам — управлять заявками и статусами
-
-Бэкенд реализован на Django + DRF, фронтенд — на React Native (Expo).
 
 ---
 
-## Основные возможности
+ Description
 
-- **Авторизация и регистрация** (с подтверждением по email)
-- **Отправка заявок** на ремонт/проблемы по категориям и аудиториям
-- **Личный кабинет**: баллы, ранг, история активности, статистика заявок
-- **Магазин**: обмен баллов на реальные призы/купоны
-- **Лидерборд**: топ-10 участников по баллам
-- **Панель администратора**: просмотр и изменение статусов заявок
+This is a modern mobile app for students and campus staff that allows users to:
 
----
+* Report issues (breakdowns, WiFi problems, water leaks, etc.)
+* Earn points for activity and redeem them for prizes
+* Track personal stats and ranking
+* View top participants and overall campus activity
+* For administrators — manage tickets and statuses
 
-## Технологии
-
-- **Backend:** Django 5.2, Django REST Framework, SimpleJWT, django-filter, django-cors-headers
-- **Frontend:** React Native (Expo), TypeScript
-- **База данных:** SQLite (по умолчанию)
-- **Docker** для деплоя бэкенда
+The backend is built with Django + DRF, and the frontend is made with React Native (Expo).
 
 ---
 
-## Быстрый старт
+ Core Features
 
-### Backend
-
-1. Установите зависимости:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-2. Примените миграции:
-    ```sh
-    python manage.py migrate
-    ```
-
-3. Запустите сервер:
-    ```sh
-    python manage.py runserver
-    ```
-
-4. Для Docker:
-    ```sh
-    docker build -t hackathon-backend .
-    docker run -p 8000:8000 hackathon-backend
-    ```
-
-### Frontend
-
-1. Перейдите в папку приложения и установите зависимости:
-    ```sh
-    npm install
-    # или
-    yarn
-    ```
-
-2. Запустите Expo:
-    ```sh
-    npx expo start
-    ```
-
-3. Отсканируйте QR-код через Expo Go или запустите эмулятор.
+* User authentication and registration (with email verification)
+* Submitting maintenance reports categorized by type and room
+* Personal dashboard: points, rank, activity history, report stats
+* Shop: redeem points for real rewards/coupons
+* Leaderboard: top 10 participants by score
+* Admin panel: view and update report statuses
 
 ---
 
+ Technologies
 
-## API
-
-- `POST /api/send-code/` — отправка кода на email
-- `POST /api/verify-register/` — регистрация с кодом
-- `POST /api/token/` — получение JWT токена
-- `GET /api/me/` — информация о текущем пользователе
-- `GET /api/reports/` — все заявки
-- `POST /api/reports/` — создать заявку
-- `GET /api/leaderboard/` — топ участников
-- `POST /api/redeem/<product_id>/` — обменять баллы на приз
+* **Backend:** Django 5.2, Django REST Framework, SimpleJWT, django-filter, django-cors-headers
+* **Frontend:** React Native (Expo), TypeScript
+* **Database:** SQLite (default)
+* **Deployment:** Docker for backend deployment
 
 ---
 
+ Quick Start
+
+Backend
+
+1. Install dependencies:
+
+   sh
+   pip install -r requirements.txt
+   ```
+
+2. Apply migrations:
+
+   sh python manage.py migrate
+   
+
+3. Run the development server:
+
+   sh python manage.py runserver
+ 
+
+4. Using Docker:
+
+   sh docker build -t hackathon-backend .
+   docker run -p 8000:8000 hackathon-backend
+
+
+Frontend
+
+1. Navigate to the app directory and install dependencies:
+
+   sh
+   npm install
+
+2. Start Expo:
+
+    sh
+   npx expo start
+ 
+
+3. Scan the QR code with Expo Go or launch in an emulator.
+
+---
+
+ API Endpoints
+
+ `POST /api/send-code/` — send verification code via email
+ `POST /api/verify-register/` — register user with code
+ `POST /api/token/` — obtain JWT token
+ `GET /api/me/` — get current user info
+ `GET /api/reports/` — list all reports
+ `POST /api/reports/` — create a new report
+ `GET /api/leaderboard/` — get top participants
+ `POST /api/redeem/<product_id>/` — redeem points for a prize
+
+---
