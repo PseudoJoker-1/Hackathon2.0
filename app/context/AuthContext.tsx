@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
   useEffect(() => {
     (async () => {
       const token = await AsyncStorage.getItem('access');
@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('http://localhost:8000/api/token/', {
+    const res = await fetch(`${BASE_URL}/api/token/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

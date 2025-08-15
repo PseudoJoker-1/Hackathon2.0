@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '../context/HomeScreen_protected';
+import { useFocusEffect } from '@react-navigation/native'; // <-- add this
 
 interface Report {
   id: number;
@@ -26,6 +27,7 @@ function ProfileScreen() {
   const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
 
   const fetchProfile = async () => {
+    setLoading(true); // <-- ensure loading state on every focus
     const token = await AsyncStorage.getItem('access');
     try {
       const [meRes, reportsRes] = await Promise.all([
@@ -56,9 +58,11 @@ function ProfileScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
 
   if (loading || !user) return <ActivityIndicator size="large" style={{ flex: 1 }} color="#2563EB" />;
 

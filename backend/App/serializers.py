@@ -127,13 +127,15 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = ['id', 'number']
 
 class ReportSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Report
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['user','user_name']
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
+        validated_data['user_name'] = self.context['request'].user.username
         return super().create(validated_data)
 
 class ScoreTransactionSerializer(serializers.ModelSerializer):

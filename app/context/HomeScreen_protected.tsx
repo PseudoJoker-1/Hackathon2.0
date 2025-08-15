@@ -20,12 +20,13 @@ const withAuthProtection = (WrappedComponent: WrappedComponentType) => {
   return function ProtectedComponent(props: WithAuthProtectionProps): React.ReactElement {
     const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
+    const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
 
     const refreshAccessToken = async (): Promise<boolean> => {
       const refresh = await AsyncStorage.getItem('refresh');
       if (!refresh) return false;
 
-      const res = await fetch('http://localhost:8000/api/token/refresh/', {
+      const res = await fetch(`${BASE_URL}/api/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh }),

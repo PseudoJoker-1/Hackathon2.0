@@ -154,6 +154,9 @@ class Report(models.Model):
     REPORT_TYPES = [
         ('computer', 'Computer is broken'),
         ('light', 'Light Issue'),
+        ('water','Water/plumbing'),
+        ('internet','Wifi/Internet'),
+        ('heating','Heating/Cooling'),
         ('other', 'Other'),
     ]
     STATUS_TYPES = [
@@ -167,6 +170,8 @@ class Report(models.Model):
     status = models.CharField(max_length=50,choices=STATUS_TYPES,default='Pending')
     attachment = models.FileField(upload_to='documents/',null=True,blank=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
+    user_name = models.CharField(max_length=25)
+    report_date = models.DateTimeField(auto_now_add=True)
     def save(self, *args, **kwargs):
         if not self.pk and self.user:
             self.user.points = (self.user.points or 0) +1 
