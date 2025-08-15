@@ -5,7 +5,7 @@ export const useAuth = () => {
   const { isAuthenticated, login, logout, initialize } = useAuthStore();
   
   useEffect(() => {
-    initialize();
+    initialize()
   }, []);
 
   return { isAuthenticated, login, logout };

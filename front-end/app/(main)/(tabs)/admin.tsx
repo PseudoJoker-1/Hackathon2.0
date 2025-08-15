@@ -43,7 +43,6 @@ export default function AdminsScreen() {
       setLoading(false);
     }
   }
-
   const updateStatus = async (id: number, newStatus: string) => {
     const token = await AsyncStorage.getItem('access');
     try {
@@ -69,6 +68,7 @@ export default function AdminsScreen() {
 
   useEffect(() => {
     fetchReports();
+    // updateStatus()
   }, []);
 
   if (loading) return <ActivityIndicator size="large" color="#2563EB" style={{ flex: 1 }} />;

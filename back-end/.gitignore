@@ -37,3 +37,38 @@ yarn-error.*
 *.tsbuildinfo
 *.venv
 *venv
+
+# Виртуальное окружение
+venv/
+ENV/
+env/
+.venv/
+
+# Файлы кэша Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# Настройки IDE
+.vscode/
+.idea/
+
+# Файлы и папки macOS/Linux/Windows
+.DS_Store
+Thumbs.db
+
+# Базы данных SQLite
+*.sqlite3
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+

@@ -1,4 +1,4 @@
-import { ReportType } from '@/types'; // Добавлен импорт типа
+import { ReportType } from '@/types'
 
 export const reportTypes: ReportType[] = [
   {
@@ -31,4 +31,4 @@ export const reportTypes: ReportType[] = [
     icon: 'help-circle-outline',
     color: '#6B7280'
   }
-];
+]
