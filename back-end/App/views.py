@@ -43,50 +43,10 @@ class CurrentUserView(APIView):
             'id': request.user.id,
             'username': request.user.username,
             'email': request.user.email,
-            'vacation_days_left': request.user.vacation_days_left,
             'role' : request.user.role,
             'points' : request.user.points,
             'is_Admin' : request.user.is_admin,
         })
-
-class DocumentVS(ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status','doc_type']
-    search_fields = ['author__username']
-    ordering_fields = ['create_date']
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-class DocumentHistoryVS(ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['document__author', 'status']
-    search_fields = ['document__author__username']
-    ordering_fields  = ['create_date', 'vacation_start_date']
-    queryset = DocumentHistory.objects.all()
-    serializer_class = DocumentHistorySer
-
-class ApprovalStepVS(ModelViewSet):
-    queryset = ApprovalStep.objects.all()
-    serializer_class = ApprovalStepSer
-    def get_queryset(self):
-        return ApprovalStep.objects.filter(document__author=self.request.user)
-    def perform_create(self, serializer):
-        serializer.save(approver=self.request.user)
-
-class NotificationVS(ModelViewSet):
-    queryset = Notification.objects.all()
-    serializer_class = NotificationSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return Notification.objects.filter(user=user)
-    
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class UserVS(ModelViewSet):
     queryset = User.objects.all()
@@ -137,23 +97,10 @@ class ReportViewSet(viewsets.ModelViewSet):
         context['request'] = self.request
         return context
 
-class ScoreTransactionVS(ModelViewSet):
-    queryset = ScoreTransaction.objects.all()
-    serializer_class = ScoreTransactionSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return ScoreTransaction.objects.filter(user=user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
 class ProductVS(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     
-
-
 class LeaderboardView(APIView):
     def get(self, request):
         users = User.objects.order_by('-points')[:10]
@@ -167,6 +114,15 @@ class LeaderboardView(APIView):
         ]
         return Response(data)
     
+class FacilityView(viewsets.ModelViewSet):
+    queryset = Facility.objects.all()
+    serializer_class = FacilitySerializer
+    permission_classes = [IsAuthenticated]
+
+class WalletView(viewsets.ModelViewSet):
+    queryset = Wallet.objects.all()
+    serializer_class = WalletSerializer
+    permission_classes = [IsAuthenticated]
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

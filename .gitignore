@@ -1,13 +1,21 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
-node_modules/
+# node_modules/
+front-end/node_modules/
+
+# Python venv
+back-end/venv/
 
 # Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# .expo/
+# dist/
+# web-build/
+# expo-env.d.ts
+front-end/.expo/
+front-end/dist/
+front-end/web-build/
+front-end/expo-env.d.ts
 
 # Native
 .kotlin/
