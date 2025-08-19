@@ -1,94 +1,99 @@
-// home
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import withAuthProtection from '@/components/common/ProtectedRoute';
-import { usePoints } from '../../context/PointsContext';
-import { useFocusEffect } from '@react-navigation/native';
-// import { fetchPoints } from '@/app/context/PointsContext.js';
+import React, { useEffect, useState, useCallback } from 'react'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import axios from 'axios'
+import { ENDPOINTS } from '@/utils/api/endpoints'
+import withAuthProtection from '@/components/common/ProtectedRoute'
+import { usePoints } from '../../context/PointsContext'
+import { useFocusEffect } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+
 interface Report {
-  id: number;
-  report_type: string;
-  status: string;
-  room: { number: number };
-  description: string;
+  id: number
+  report_type: string
+  status: string
+  room: { number: number }
+  description: string
 }
 
 interface Leader {
-  id: number;
-  name: string;
-  points: number;
+  id: number
+  name: string
+  points: number
 }
 
 const HomeScreen = () => {
-  const [username, setUsername] = useState('');
-  const { points, fetchPoints } = usePoints(); 
-  const [stats, setStats] = useState({ resolved: 0, pending: 0, urgent: 0 });
-  const [recentReports, setRecentReports] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false); 
-  
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
-  // const BASE_URL = 'http://localhost:8000';  
+  const [username, setUsername] = useState('')
+  const { points, fetchPoints } = usePoints()
+  const [stats, setStats] = useState({ resolved: 0, pending: 0, urgent: 0 })
+  const [recentReports, setRecentReports] = useState<Report[]>([])
+  const [leaderboard, setLeaderboard] = useState<Leader[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
+  // Загружаем все данные для главного экрана
   const fetchData = useCallback(async () => {
     const token = await AsyncStorage.getItem('access');
+    const API_URL = 'https://django-api-1082068772584.us-central1.run.app';
     if (!token) {
       setLoading(false);
       return;
     }
     const headers = { Authorization: `Bearer ${token}` };
-
+  
     try {
       const [userRes, reportRes, leaderRes] = await Promise.all([
-        fetch(`${BASE_URL}/api/me/`, { headers }),
-        fetch(`${BASE_URL}/api/reports/`, { headers }),
-        fetch(`${BASE_URL}/api/leaderboard/`, { headers }),
+        axios.get(`${API_URL}/api/me/`, { headers }),
+        axios.get(`${API_URL}/api/reports/`, { headers }),
+        axios.get(`${API_URL}/api/leaderboard/`, { headers }),
       ]);
-
-      const userData = await userRes.json();
+  
+      // Извлекаем данные из ответов
+      const userData = userRes.data;
       setUsername(userData.username || 'User');
       setIsAdmin(userData.is_admin === true);
-
-      const reports: Report[] = await reportRes.json();
+  
+      const reports: Report[] = reportRes.data;
       console.log(reports);
-      
+  
       const resolved = reports.filter(r => r.status === 'resolved').length;
       const pending = reports.filter(r => r.status === 'pending').length;
       const urgent = reports.filter(r => r.status === 'urgent').length;
       setStats({ resolved, pending, urgent });
       setRecentReports(reports.slice(0, 2));
-
-      const leaders: Leader[] = await leaderRes.json();
+  
+      const leaders: Leader[] = leaderRes.data;
       setLeaderboard(leaders.slice(0, 3));
     } catch (error) {
       console.error('API error:', error);
     } finally {
       setLoading(false);
     }
-  }, [points]);
+  }, [points])
 
+  // Обновляем данные при фокусе на экране
   useFocusEffect(
     useCallback(() => {
-      fetchData();
-      fetchPoints();
-    }, [fetchData,fetchPoints])
-  );
+      fetchData()
+      fetchPoints()
+    }, [fetchData, fetchPoints])
+  )
 
+  // Показываем загрузку, пока данные не получены
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#3B82F6" />
       </SafeAreaView>
-    );
+    )
   }
   
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Приветствие и баллы пользователя */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Good morning,</Text>
@@ -100,6 +105,7 @@ const HomeScreen = () => {
           </View>
         </View>
 
+        {/* Статистика для администраторов */}
         {isAdmin && (
           <View style={styles.statsContainer}>
             <StatCard icon="checkmark-circle" color="#10B981" label="Resolved" value={stats.resolved} />
@@ -108,9 +114,10 @@ const HomeScreen = () => {
           </View>
         )}
 
+        {/* Последние отчеты */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Reports</Text>
-          {recentReports.map((r,index) => (
+          {recentReports.map((r, index) => (
             <View key={index} style={styles.reportCard}>
               <Ionicons name="alert-circle" size={20} color="#EF4444" style={{ marginRight: 12 }} />
               <View style={{ flex: 1 }}>
@@ -122,9 +129,10 @@ const HomeScreen = () => {
           ))}
         </View>
 
+        {/* Топ участников */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Contributors</Text>
-          {leaderboard.map((user,idx)=>(
+          {leaderboard.map((user, idx) => (
             <View key={idx} style={styles.reportCard}>
               <Text style={{ marginRight: 8 }}>{idx + 1}.</Text>
               <View style={{ flex: 1 }}>
@@ -136,22 +144,19 @@ const HomeScreen = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
+// Компонент для отображения статистики
 const StatCard = ({ icon, color, label, value }: { icon: any; color: string; label: string; value: number }) => (
   <View style={styles.statCard}>
     <Ionicons name={icon} size={20} color={color} style={{ marginBottom: 6 }} />
     <Text style={styles.statNumber}>{value}</Text>
     <Text style={styles.statLabel}>{label}</Text>
   </View>
-);
+)
 
-
-
-export default withAuthProtection(HomeScreen);
-
-
+export default withAuthProtection(HomeScreen)
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
@@ -201,4 +206,4 @@ const styles = StyleSheet.create({
   reportTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 2 },
   reportSubtitle: { fontSize: 14, color: '#6B7280' },
   statusText: { fontSize: 12, fontWeight: '600', color: '#D97706' },
-});
+})

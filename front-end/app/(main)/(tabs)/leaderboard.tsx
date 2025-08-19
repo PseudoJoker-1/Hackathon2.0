@@ -1,43 +1,50 @@
-// leader board
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import withAuthProtection from '@/components/common/ProtectedRoute';
-import { usePoints } from '@/app/context/PointsContext';
+import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import axios from 'axios'
+import { ENDPOINTS } from '@/utils/api/endpoints'
+import withAuthProtection from '@/components/common/ProtectedRoute'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 interface Leader {
-  id: number;
-  name: string;
-  points: number;
+  id: number
+  name: string
+  points: number
 }
 
 const LeaderboardScreen = () => {
-  const [leaders, setLeaders] = useState<Leader[]>([]);
-  const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const [leaders, setLeaders] = useState<Leader[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Загружаем таблицу лидеров
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/leaderboard/`);
-        const data = await res.json();
-        setLeaders(data);
-      } catch (err) {
-        console.error('Failed to load leaderboard:', err);
+        const token = await AsyncStorage.getItem('access')
+        const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+        const response = await axios.get(`${BASE_URL}/api/leaderboard/`,{
+          headers: {Authorization: `Bearer ${token}`},
+        })
+        setLeaders(response.data)
+      } catch (error) {
+        console.error('Failed to load leaderboard:', error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchLeaderboard();
-  }, []);
+    fetchLeaderboard()
+  }, [])
 
+  // Показываем загрузку, пока данные не получены
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
       </SafeAreaView>
-    );
+    )
   }
 
   return (
@@ -46,7 +53,7 @@ const LeaderboardScreen = () => {
         <Text style={styles.title}>Leaderboard</Text>
         <Text style={styles.subtitle}>Top campus contributors</Text>
 
-        {leaders.map((user, index) => (
+        {leaders?.map((user, index) => (
           <View key={user.id} style={styles.item}>
             <Text style={styles.rank}>{index + 1}</Text>
             <View style={styles.avatar}>
@@ -65,10 +72,10 @@ const LeaderboardScreen = () => {
         ))}
       </ScrollView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default withAuthProtection(LeaderboardScreen);
+export default withAuthProtection(LeaderboardScreen)
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
@@ -101,4 +108,4 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   name: { fontSize: 16, fontWeight: '600', color: '#111827' },
   points: { fontSize: 14, color: '#6B7280' },
-});
+})

@@ -1,48 +1,53 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import axios from 'axios'
+import { ENDPOINTS } from '@/utils/api/endpoints'
 
 type PointsContextType = {
-  points: number;
-  setPoints: (p: number) => void;
-  fetchPoints: () => Promise<void>; // ⬅️ добавляем
-};
+  points: number
+  setPoints: (p: number) => void
+  fetchPoints: () => Promise<void>
+}
 
 const PointsContext = createContext<PointsContextType>({
   points: 0,
   setPoints: () => {},
   fetchPoints: async () => {}, 
-});
+})
 
 export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
-  const [points, setPoints] = useState(0);
+  const [points, setPoints] = useState(0)
 
+  // Загружаем баллы пользователя с сервера
   const fetchPoints = async () => {
-    const token = await AsyncStorage.getItem('access');
-    if (!token) return;
     try {
-      const res = await fetch('https://django-api-1082068772584.us-central1.run.app/api/me/', {
-        headers: { Authorization: `Bearer ${token}` },
-        // mode:'no-cors',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPoints(data.points || 0);
+      const token = await AsyncStorage.getItem('access')
+      
+      if (!token) {
+        console.log('No token found')
+        return
       }
-    } catch (e) {
-        console.error('Failed to fetch points:', e);
+      const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+      const response = await axios.get(`${API_URL}${ENDPOINTS.USER_PROFILE}`,{
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      setPoints(response.data.points || 0)
+    } catch (error) {
+      console.error('Failed to fetch points:', error)
     }
-  };
+  }
 
+  // Загружаем баллы при запуске приложения
   useEffect(() => {
-    fetchPoints();
-  }, []);
+    fetchPoints()
+  }, [])
 
   return (
     <PointsContext.Provider value={{ points, setPoints, fetchPoints }}>
       {children}
     </PointsContext.Provider>
-  );
-};
+  )
+}
 
-
-export const usePoints = () => useContext(PointsContext);
+export const usePoints = () => useContext(PointsContext)

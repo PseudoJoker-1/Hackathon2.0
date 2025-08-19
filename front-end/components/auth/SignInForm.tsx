@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/app/context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 export default function SignInForm({ router }: { router: any }) {
   const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
@@ -27,26 +28,22 @@ export default function SignInForm({ router }: { router: any }) {
     }
     const url = `${BASE_URL}/api/token/`;
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error('Ошибка логина:', err);
-        Alert.alert('Login failed', 'Invalid credentials');
-        return;
-      }
-
-      const { access, refresh } = await res.json();
+      const res = await axios.post(
+        url,
+        { email, password }, // Данные передаются вторым параметром
+        {
+          headers: { 'Content-Type': 'application/json' }, // Заголовки
+        }
+      );
+  
+      // Проверяем успешность запроса
+      const { access, refresh } = res.data; // Данные находятся в res.data
       await AsyncStorage.setItem('access', access);
       await AsyncStorage.setItem('refresh', refresh);
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Ошибка запроса:', error);
-      Alert.alert('Ошибка', 'Проверь подключение к серверу');
+      Alert.alert('Ошибка', 'Проверь подключение к серверу или данные для входа');
     }
   };
 

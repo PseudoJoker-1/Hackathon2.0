@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
 
 const reportData = [
   {
@@ -40,61 +40,62 @@ const reportData = [
     submitted: '1 day ago',
     points: 50,
   },
-];
+]
 
-const statusFilters = ['All', 'Pending', 'In Progress', 'Resolved'];
+const statusFilters = ['All', 'Pending', 'In Progress', 'Resolved']
 
 export default function AdminReports() {
-  const [selectedFilter, setSelectedFilter] = useState('All');
+  const [selectedFilter, setSelectedFilter] = useState('All')
 
+  // Фильтруем отчеты по выбранному статусу
   const filteredReports = selectedFilter === 'All' 
     ? reportData 
-    : reportData.filter(report => report.status === selectedFilter.toLowerCase().replace(' ', '-'));
+    : reportData.filter(report => report.status === selectedFilter.toLowerCase().replace(' ', '-'))
 
+  // Выбираем цвет в зависимости от статуса
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return '#F59E0B';
-      case 'in-progress': return '#3B82F6';
-      case 'resolved': return '#10B981';
-      default: return '#6B7280';
+    const statusColors = {
+      'pending': '#F59E0B',
+      'in-progress': '#3B82F6',
+      'resolved': '#10B981',
+      'default': '#6B7280'
     }
-  };
+    return statusColors[status] || statusColors.default
+  }
 
+  // Выбираем цвет в зависимости от приоритета
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return '#EF4444';
-      case 'medium': return '#F59E0B';
-      case 'low': return '#10B981';
-      default: return '#6B7280';
+    const priorityColors = {
+      'high': '#EF4444',
+      'medium': '#F59E0B',
+      'low': '#10B981',
+      'default': '#6B7280'
     }
-  };
+    return priorityColors[priority] || priorityColors.default
+  }
 
+  // Выбираем иконку в зависимости от статуса
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Ionicons name="time" size={16} color="#F59E0B" />;
-      case 'in-progress':
-        return <Ionicons name="warning" size={16} color="#3B82F6" />;
-      case 'resolved':
-        return <Ionicons name="checkmark-circle" size={16} color="#10B981" />;
-      default:
-        return <Ionicons name="time" size={16} color="#6B7280" />;
+    const statusIcons = {
+      'pending': <Ionicons name="time" size={16} color="#F59E0B" />,
+      'in-progress': <Ionicons name="warning" size={16} color="#3B82F6" />,
+      'resolved': <Ionicons name="checkmark-circle" size={16} color="#10B981" />,
+      'default': <Ionicons name="time" size={16} color="#6B7280" />
     }
-  };
+    return statusIcons[status] || statusIcons.default
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Admin Panel</Text>
           <Text style={styles.subtitle}>Manage campus reports</Text>
         </View>
-
-        {/* Stats Overview */}
+        
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="time" size={20} color="#F59E0B" />
+            <Ionicons name="time" size={20} color="#F59E0B"/>
             <Text style={styles.statNumber}>8</Text>
             <Text style={styles.statLabel}>Pending</Text>
           </View>
@@ -109,39 +110,27 @@ export default function AdminReports() {
             <Text style={styles.statLabel}>Resolved</Text>
           </View>
         </View>
-
-        {/* Filter Tabs */}
+        
         <View style={styles.filterContainer}>
           <Ionicons name="filter" size={20} color="#6B7280" />
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.filterTabs}
-          >
-            {statusFilters.map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                style={[
-                  styles.filterTab,
-                  selectedFilter === filter && styles.filterTabActive
-                ]}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterTabs}>
+            {statusFilters.map((filter, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={[styles.filterTab, selectedFilter === filter && styles.filterTabActive]} 
                 onPress={() => setSelectedFilter(filter)}
               >
-                <Text style={[
-                  styles.filterText,
-                  selectedFilter === filter && styles.filterTextActive
-                ]}>
+                <Text style={[styles.filterText, selectedFilter === filter && styles.filterTextActive]}>
                   {filter}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
-
-        {/* Reports List */}
+        
         <View style={styles.reportsContainer}>
-          {filteredReports.map((report) => (
-            <View key={report.id} style={styles.reportCard}>
+          {filteredReports.map((report, index) => (
+            <View key={index} style={styles.reportCard}>
               <View style={styles.reportHeader}>
                 <View style={styles.reportTitleSection}>
                   <Text style={styles.reportTitle}>{report.title}</Text>
@@ -157,17 +146,17 @@ export default function AdminReports() {
                   </View>
                 </View>
                 <View style={styles.priorityBadge}>
-                  <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(report.priority) }]} />
+                  <View style={[styles.priorityDot, {backgroundColor: getPriorityColor(report.priority)}]}/>
                 </View>
               </View>
-
+              
               <Text style={styles.reportDescription}>{report.description}</Text>
-
+              
               <View style={styles.reportLocation}>
                 <Ionicons name="location" size={14} color="#6B7280" />
                 <Text style={styles.locationText}>{report.location}</Text>
               </View>
-
+              
               <View style={styles.reportFooter}>
                 <View style={styles.statusSection}>
                   {getStatusIcon(report.status)}
@@ -177,7 +166,7 @@ export default function AdminReports() {
                 </View>
                 <Text style={styles.pointsText}>{report.points} pts</Text>
               </View>
-
+              
               {report.status !== 'resolved' && (
                 <View style={styles.actionButtons}>
                   {report.status === 'pending' && (
@@ -196,11 +185,11 @@ export default function AdminReports() {
             </View>
           ))}
         </View>
-
+        
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -404,4 +393,4 @@ const styles = StyleSheet.create({
   bottomPadding: {
     height: 20,
   },
-});
+})

@@ -1,10 +1,9 @@
-// report
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import withAuthProtection from '@/components/common/ProtectedRoute';
+import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import client from '@/utils/api/client'
+import withAuthProtection from '@/components/common/ProtectedRoute'
 
 const issueTypes = [
   { id: 'light', name: 'Lighting', icon: 'bulb', color: '#F59E0B' },
@@ -13,89 +12,66 @@ const issueTypes = [
   { id: 'wifi', name: 'WiFi/Internet', icon: 'wifi', color: '#8B5CF6' },
   { id: 'hvac', name: 'Heating/Cooling', icon: 'thermometer', color: '#EF4444' },
   { id: 'other', name: 'Other', icon: 'warning', color: '#6B7280' },
-];
+]
 
 interface Room {
-  id: number;
-  number: number;
+  id: number
+  number: number
 }
 
 function ReportScreen() {
-  const [selectedIssue, setSelectedIssue] = useState<string | null>(null);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [roomId, setRoomId] = useState<number | null>(null);
-  const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const [selectedIssue, setSelectedIssue] = useState<string | null>(null)
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [roomId, setRoomId] = useState<number | null>(null)
+  const [description, setDescription] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const token = await AsyncStorage.getItem('access');
-        const res = await fetch(`${BASE_URL}/api/rooms/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          // mode:'no-cors',
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error('Failed to fetch rooms');
-        }
-        console.log('Rooms:', data);
-        setRooms(data);
-      } catch (err) {
-        console.error('Failed to load rooms:', err);
+        const response = await client.get('/api/rooms/')
+        setRooms(response.data)
+      } catch (error) {
+        console.error('Failed to load rooms:', error)
+        Alert.alert('Error', 'Failed to load rooms')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchRooms();
-  }, []);
+    }
+    fetchRooms()
+  }, [])
 
   const handleSubmit = async () => {
     if (!selectedIssue || !roomId || !description) {
-      Alert.alert('Missing Information', 'Please fill in all fields.');
-      return;
+      Alert.alert('Missing Information', 'Please fill in all fields.')
+      return
     }
 
     try {
-      const token = await AsyncStorage.getItem('access');
-      const response = await fetch(`${BASE_URL}/api/reports/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        // mode:'no-cors',
-        body: JSON.stringify({
-          report_type: selectedIssue,
-          room: roomId,
-          description: description,
-        }),
-      });
+      const response = await client.post('/api/reports/', {
+        report_type: selectedIssue,
+        room: roomId,
+        description: description,
+      })
 
-      if (response.ok) {
-        Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!');
-        setSelectedIssue(null);
-        setRoomId(null);
-        setDescription('');
-      } else {
-        console.log(await response.text());
-        Alert.alert('Error', 'Failed to submit the report.');
+      if (response.status === 201) {
+        Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!')
+        setSelectedIssue(null)
+        setRoomId(null)
+        setDescription('')
       }
-    } catch (err) {
-      console.error('Submit error:', err);
-      Alert.alert('Error', 'Something went wrong.');
+    } catch (error: any) {
+      console.error('Submit error:', error)
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong.')
     }
-  };
+  }
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
       </SafeAreaView>
-    );
+    )
   }
 
   return (
@@ -103,12 +79,11 @@ function ReportScreen() {
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Report an Issue</Text>
 
-        {/* Issue type */}
         <Text style={styles.label}>Issue Type</Text>
         <View style={styles.issueGrid}>
-          {issueTypes.map(issue => (
+          {issueTypes.map((issue, index) => (
             <TouchableOpacity
-              key={issue.id}
+              key={index}
               style={[
                 styles.issueCard,
                 selectedIssue === issue.id && styles.issueCardSelected,
@@ -116,18 +91,21 @@ function ReportScreen() {
               onPress={() => setSelectedIssue(issue.id)}
             >
               <Ionicons name={issue.icon as any} size={20} color={issue.color} />
-              <Text style={{ color: selectedIssue === issue.id ? issue.color : '#374151' }}>
+              <Text
+                style={{
+                  color: selectedIssue === issue.id ? issue.color : '#374151',
+                }}
+              >
                 {issue.name}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Room selection */}
         <Text style={styles.label}>Room</Text>
-        {rooms.map(room => (
+        {rooms.map((room, index) => (
           <TouchableOpacity
-            key={room.id}
+            key={index}
             style={[
               styles.roomOption,
               roomId === room.id && styles.roomSelected,
@@ -138,7 +116,6 @@ function ReportScreen() {
           </TouchableOpacity>
         ))}
 
-        {/* Description */}
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={styles.input}
@@ -146,19 +123,19 @@ function ReportScreen() {
           placeholder="Describe the issue in detail"
           value={description}
           onChangeText={setDescription}
+          textAlignVertical="top"
         />
 
-        {/* Submit button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Ionicons name="send" size={18} color="white" />
           <Text style={styles.submitText}>Submit Report</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
-export default withAuthProtection(ReportScreen);
+export default withAuthProtection(ReportScreen)
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
@@ -201,7 +178,6 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     padding: 12,
     fontSize: 16,
-    textAlignVertical: 'top',
     minHeight: 100,
   },
   submitButton: {
@@ -219,4 +195,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+})

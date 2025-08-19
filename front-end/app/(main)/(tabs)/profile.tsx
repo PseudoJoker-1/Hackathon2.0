@@ -1,47 +1,49 @@
-// profile
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import withAuthProtection from '@/components/common/ProtectedRoute';
+import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import axios from 'axios'
+import { ENDPOINTS } from '@/utils/api/endpoints'
+import withAuthProtection from '@/components/common/ProtectedRoute'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface Report {
-  id: number;
-  description: string;
-  status: string;
-  report_type: string;
-  created_at?: string;
+  id: number
+  description: string
+  status: string
+  report_type: string
+  created_at?: string
 }
 
 interface UserData {
-  FIO: string;
-  points: number;
-  rank: number;
+  FIO: string
+  points: number
+  rank: number
 }
 
 function ProfileScreen() {
-  const [user, setUser] = useState<UserData | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
-  const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const [user, setUser] = useState<UserData | null>(null)
+  const [reports, setReports] = useState<Report[]>([])
+  const [loading, setLoading] = useState(true)
 
+  // Загружаем данные профиля пользователя
   const fetchProfile = async () => {
     const token = await AsyncStorage.getItem('access');
+    const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
     try {
       const [meRes, reportsRes] = await Promise.all([
-        fetch(`${BASE_URL}/api/me/`, {
+        axios.get(`${API_URL}/api/me/`, {
           headers: { Authorization: `Bearer ${token}` },
           // mode:'no-cors',
         }),
-        fetch(`${BASE_URL}/api/reports/`, {
+        axios.get(`${API_URL}/api/reports/`, {
           headers: { Authorization: `Bearer ${token}` },
           // mode:'no-cors',
         })
       ]);
 
-      const userData = await meRes.json();
-      const reportData = await reportsRes.json();
+      const userData = await meRes.data
+      const reportData = await reportsRes.data
 
       setUser({
         FIO: userData.FIO || userData.username,
@@ -57,22 +59,26 @@ function ProfileScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    fetchProfile()
+  }, [])
 
-  if (loading || !user) return <ActivityIndicator size="large" style={{ flex: 1 }} color="#2563EB" />;
+  // Показываем загрузку, пока данные не получены
+  if (loading || !user) {
+    return <ActivityIndicator size="large" style={{ flex: 1 }} color="#2563EB" />
+  }
 
-  const totalReports = reports.length;
-  const resolvedReports = reports.filter(r => r.status === 'resolved').length;
-  const successRate = totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 0;
+  // Считаем статистику отчетов
+  const totalReports = reports.length
+  const resolvedReports = reports.filter(r => r.status === 'resolved').length
+  const successRate = totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 0
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {/* Header */}
+        {/* Заголовок с информацией о пользователе */}
         <View style={styles.header}>
           <View style={styles.profileSection}>
             <View style={styles.avatar}>
@@ -84,7 +90,7 @@ function ProfileScreen() {
           </View>
         </View>
 
-        {/* Stats Cards */}
+        {/* Карточки со статистикой */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
@@ -105,7 +111,7 @@ function ProfileScreen() {
           </View>
         </View>
 
-        {/* Report Statistics */}
+        {/* Статистика отчетов */}
         <View style={styles.reportStatsCard}>
           <Text style={styles.cardTitle}>Report Statistics</Text>
           <View style={styles.reportStatsGrid}>
@@ -133,7 +139,7 @@ function ProfileScreen() {
           </View>
         </View>
 
-        {/* Recent Activity */}
+        {/* Последняя активность */}
         <View style={styles.activityCard}>
           <Text style={styles.cardTitle}>Recent Activity</Text>
           {reports.slice(0, 4).map((r) => (
@@ -164,10 +170,10 @@ function ProfileScreen() {
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
-export default withAuthProtection(ProfileScreen);
+export default withAuthProtection(ProfileScreen)
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
@@ -190,7 +196,6 @@ const styles = StyleSheet.create({
   },
   userInfo: { flex: 1 },
   userName: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 4 },
-
   statsContainer: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   statCard: {
     flex: 1,
@@ -207,7 +212,6 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 14, color: '#6B7280', fontWeight: '500', marginLeft: 8 },
   statValue: { fontSize: 24, fontWeight: '700', color: '#111827', marginBottom: 4 },
   statChange: { fontSize: 12, color: '#10B981', fontWeight: '500' },
-
   reportStatsCard: {
     backgroundColor: 'white',
     padding: 20,
@@ -225,7 +229,6 @@ const styles = StyleSheet.create({
   reportStatIcon: { marginBottom: 8 },
   reportStatNumber: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 4 },
   reportStatLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
-
   activityCard: {
     backgroundColor: 'white',
     padding: 20,
@@ -250,4 +253,4 @@ const styles = StyleSheet.create({
   activityDate: { fontSize: 14, color: '#6B7280' },
   activityPoints: { marginLeft: 12 },
   bottomPadding: { height: 20 },
-});
+})

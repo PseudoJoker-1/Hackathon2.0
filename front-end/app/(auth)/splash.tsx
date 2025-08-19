@@ -1,27 +1,25 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect } from 'react'
+import { View, Text, StyleSheet, Dimensions } from 'react-native'
+import { useRouter } from 'expo-router'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 
 export default function SplashScreen() {
-  const router = useRouter();
+  const router = useRouter()
 
+  // Через 3 секунды переходим на onboarding
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace('/(auth)/onboarding');
-    }, 3000);
+      router.replace('/(auth)/onboarding')
+    }, 3000)
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
-    <LinearGradient
-      colors={['#1E3A8A', '#3B82F6']}
-      style={styles.container}
-    >
+    <LinearGradient colors={['#1E3A8A', '#3B82F6']} style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Ionicons name="school" size={80} color="#FFFFFF" />
@@ -31,7 +29,7 @@ export default function SplashScreen() {
       </View>
       <Text style={styles.copyright}>© 2025 Con. All rights reserved.</Text>
     </LinearGradient>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -71,4 +69,4 @@ const styles = StyleSheet.create({
     color: '#93C5FD',
     marginBottom: 40,
   },
-});
+})

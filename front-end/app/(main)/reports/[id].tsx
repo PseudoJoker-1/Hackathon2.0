@@ -1,31 +1,34 @@
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { useReportStore } from '@/features/report/reportSlice';
-import { useEffect } from 'react';
-import { ReportDetail } from '@/components/features/report/ReportDetail';
-// import { ImageUploader } from '@/components/ui/ImageUploader';
-import { Button } from '@/components/ui/Button';
+import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { useLocalSearchParams } from 'expo-router'
+import { useReportStore } from '@/features/report/reportSlice'
+import { useEffect } from 'react'
+import { ReportDetail } from '@/components/features/report/ReportDetail'
+import { Button } from '@/components/ui/Button'
 
 export default function ReportDetailsPage() {
-  const { id } = useLocalSearchParams();
-  const { selectedReport, fetchReportById } = useReportStore();
+  const { id } = useLocalSearchParams()
+  const { selectedReport, fetchReportById } = useReportStore()
   
+  // Загружаем данные отчета при открытии страницы
   useEffect(() => {
     if (id) {
-      fetchReportById(id as string);
+      fetchReportById(id as string)
     }
-  }, [id]);
+  }, [id])
 
+  // Обрабатываем загрузку изображений
   const handleImageUpload = async (uri: string) => {
-    // Implement image upload logic
-  };
+    // Здесь будет логика загрузки изображений
+    console.log('Uploading image:', uri)
+  }
 
+  // Показываем загрузку пока данные не получены
   if (!selectedReport) {
     return (
       <View style={styles.loadingContainer}>
-        {/* <ActivityIndicator size="large" color="#1E3A8A" /> */}
+        <ActivityIndicator size="large" color="#1E3A8A" />
       </View>
-    );
+    )
   }
 
   return (
@@ -33,18 +36,15 @@ export default function ReportDetailsPage() {
       <ReportDetail report={selectedReport} />
       
       <View style={styles.uploadContainer}>
-        {/* <Text style={styles.uploadTitle}>Attach Photo</Text> */}
-        {/* <ImageUploader onImageSelected={handleImageUpload} /> */}
-        
-        {/* <Button 
+        <Button 
           title="Submit Report" 
-          onPress={() => console.log('Report submitted')}
-          fullWidth
+          onPress={() => console.log('Report submitted')} 
+          fullWidth 
           style={styles.submitButton}
-        /> */}
+        />
       </View>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -64,13 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
   },
-  uploadTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#1E293B',
-  },
   submitButton: {
     marginTop: 24,
   }
-});
+})

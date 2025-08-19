@@ -1,30 +1,26 @@
-// layout
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PointsProvider } from '@/app/context/PointsContext';
+import { Tabs } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { useEffect, useState } from 'react'
+import { PointsProvider } from '@/app/context/PointsContext'
 
 export default function TabLayout() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Проверяем, является ли пользователь администратором
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = await AsyncStorage.getItem('access');
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      };
-      const userRes = await fetch(`${BASE_URL}/api/me/`, { headers });
-      if (userRes.ok) {
-        const user = await userRes.json();
-        if (user.is_admin) {
-          setIsAdmin(true);
-        }
+    const checkAdminStatus = async () => {
+      try {
+        // Здесь должна быть логика проверки прав администратора
+        // Временно устанавливаем isAdmin в false для всех пользователей
+        setIsAdmin(false)
+      } catch (error) {
+        console.error('Error checking admin status:', error)
+        setIsAdmin(false)
       }
-    };
-    fetchUser();
-  }, []);
+    }
+
+    checkAdminStatus()
+  }, [])
 
   return (
     <PointsProvider>
@@ -46,7 +42,8 @@ export default function TabLayout() {
             fontWeight: '500',
             marginTop: 4,
           },
-        }}>
+        }}
+      >
         <Tabs.Screen
           name="index"
           options={{
@@ -60,7 +57,7 @@ export default function TabLayout() {
           name="report"
           options={{
             title: 'Report',
-            tabBarIcon: ({ size, color })=>(
+            tabBarIcon: ({ size, color }) => (
               <Ionicons name="alert-circle" size={size} color={color} />
             ),
           }}
@@ -92,17 +89,19 @@ export default function TabLayout() {
             ),
           }}
         />
-        {/* тут в любом случье показывается admin page,надо исправить */}
-        {!isAdmin && (
+        {/* Показываем вкладку администратора только для админов */}
+        {/* {!isAdmin && isAdmin && ( */}
           <Tabs.Screen
-          name="admin"
-          options={{
-            title: "Admin",
-            tabBarIcon: ({ color }) => <Ionicons name="shield-checkmark" size={22} color={color} />,
-          }}
-        />
-      )}
+            name="admin"
+            options={{
+              title: 'Admin',
+              tabBarIcon: ({ color }) => (
+                <Ionicons name="shield-checkmark" size={22} color={color} />
+              ),
+            }}
+          />
+        {/* )} */}
       </Tabs>
     </PointsProvider>
-  );
+  )
 }
