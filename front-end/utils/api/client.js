@@ -1,7 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const API_URL = 'https://django-api-1082068772584.us-central1.run.app';
+// export const API_URL = 'https://django-api-1082068772584.us-central1.run.app';
+// export const API_URL = 'http://localhost:8000/api'; // For local development
+export const API_URL = 'http://localhost:8000'; // Production URL
 
 const client = axios.create({
   baseURL: API_URL,

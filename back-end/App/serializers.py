@@ -80,7 +80,8 @@ class VerifyCodeSerializer(serializers.Serializer):
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rooms
-        fields = ['id', 'number']
+        # fields = ['id', 'number']
+        fields = ['id', 'facility', 'name']
 
 class ReportSerializer(serializers.ModelSerializer):
     

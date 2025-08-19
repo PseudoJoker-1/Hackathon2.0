@@ -24,7 +24,8 @@ function ProfileScreen() {
   const [user, setUser] = useState<UserData | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const BASE_URL = 'http://localhost:8000'; // For local development
 
   const fetchProfile = async () => {
     const token = await AsyncStorage.getItem('access');

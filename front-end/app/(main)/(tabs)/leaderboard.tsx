@@ -15,7 +15,8 @@ interface Leader {
 const LeaderboardScreen = () => {
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+  const BASE_URL = 'http://localhost:8000'; // For local development;
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {

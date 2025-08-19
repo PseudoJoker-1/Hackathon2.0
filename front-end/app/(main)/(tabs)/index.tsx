@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '@/components/common/ProtectedRoute';
 import { usePoints } from '../../context/PointsContext';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from "expo-router";  // ✅ нужно импортировать
 // import { fetchPoints } from '@/app/context/PointsContext.js';
 interface Report {
   id: number;
@@ -30,9 +31,10 @@ const HomeScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false); 
+  const router = useRouter();
   
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
-  // const BASE_URL = 'http://localhost:8000';  
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
+  const BASE_URL = 'http://localhost:8000';  
 
   const fetchData = useCallback(async () => {
     const token = await AsyncStorage.getItem('access');
@@ -107,11 +109,15 @@ const HomeScreen = () => {
             <StatCard icon="warning" color="#EF4444" label="Urgent" value={stats.urgent} />
           </View>
         )}
-
+        <View style={styles.container_button}>
+          <TouchableOpacity style={styles.addButton} onPress={() => router.push("/create_lobby")}>
+            <Ionicons name="add" size={28} color="white" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Reports</Text>
           {recentReports.map((r,index) => (
-            <View key={index} style={styles.reportCard}>
+            <View key={r.id || index} style={styles.reportCard}>
               <Ionicons name="alert-circle" size={20} color="#EF4444" style={{ marginRight: 12 }} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.reportTitle}>{r.report_type}</Text>
@@ -125,7 +131,7 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Contributors</Text>
           {leaderboard.map((user,idx)=>(
-            <View key={idx} style={styles.reportCard}>
+            <View key={user.id || idx} style={styles.reportCard}>
               <Text style={{ marginRight: 8 }}>{idx + 1}.</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.reportTitle}>{user.name}</Text>
@@ -201,4 +207,12 @@ const styles = StyleSheet.create({
   reportTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 2 },
   reportSubtitle: { fontSize: 14, color: '#6B7280' },
   statusText: { fontSize: 12, fontWeight: '600', color: '#D97706' },
+  
+  container_button: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 22, marginBottom: 20 },
+  addButton: {
+    backgroundColor: "#4c7fafff",
+    borderRadius: 50,
+    padding: 15,
+  },
 });

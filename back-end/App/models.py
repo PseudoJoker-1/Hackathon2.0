@@ -18,9 +18,10 @@ class User(AbstractUser):
         ('admin','Админ')  
     ]
     email = models.EmailField(unique=True,blank=True,null=True)
-    facility = models.ForeignKey(Facility,on_delete=models.CASCADE,related_name="facility_membership")
+    facility = models.ForeignKey(Facility,on_delete=models.CASCADE,related_name="facility_membership", null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    points = models.IntegerField(default=0)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     is_admin = models.BooleanField(default=False)
     
@@ -42,10 +43,16 @@ class Sendcode(models.Model):
         return timezone.now() > self.created_at + timedelta(minutes=10)  
 
 class Rooms(models.Model):
-    number = models.IntegerField(unique=True)
+    # name = models.CharField(max_length=50) # название комнаты (кухня, спальня и т.п.)
+    name = models.CharField(max_length=50, blank=True, null=True)
+    # number = models.IntegerField(unique=True)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name="rooms", 
+                                #  unique=True,
+                                 blank=True, null=True)
 
     def __str__(self):
-        return str(self.number)
+        # return str(self.number)
+        return str(self.name)
 
 class Report(models.Model):
     REPORT_TYPES = [

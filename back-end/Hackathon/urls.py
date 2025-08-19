@@ -45,4 +45,6 @@ urlpatterns = [
     path('api/recent-activity/', RecentActivityView.as_view(), name='recent-activity'),
     path('api/my-reports/', my_reports, name='my-reports'),
     path('api/',include('App.appurls')),
+    path("api/create_lobby/", views.create_lobby, name="create_lobby"),
+    # path('api/reports/', include('reports.appurls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

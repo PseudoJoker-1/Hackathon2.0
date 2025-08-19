@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '@/components/common/ProtectedRoute';
+import { useReportStore } from '@/features/report/reportSlice';
 
 const issueTypes = [
   { id: 'light', name: 'Lighting', icon: 'bulb', color: '#F59E0B' },
@@ -17,7 +18,9 @@ const issueTypes = [
 
 interface Room {
   id: number;
-  number: number;
+  // number: number;
+  name: string;
+  facility: number; // ID of the facility this room belongs to
 }
 
 function ReportScreen() {
@@ -26,7 +29,9 @@ function ReportScreen() {
   const [roomId, setRoomId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const { createReport } = useReportStore();
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const BASE_URL = 'http://localhost:8000'; // For local development
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -39,6 +44,7 @@ function ReportScreen() {
           // mode:'no-cors',
         });
         const data = await res.json();
+        console.log('Fetched rooms:');
         if (!res.ok) {
           throw new Error('Failed to fetch rooms');
         }
@@ -61,32 +67,50 @@ function ReportScreen() {
 
     try {
       const token = await AsyncStorage.getItem('access');
-      const response = await fetch(`${BASE_URL}/api/reports/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        // mode:'no-cors',
-        body: JSON.stringify({
-          report_type: selectedIssue,
-          room: roomId,
-          description: description,
-        }),
-      });
+      const report = {
+        report_type: selectedIssue,
+        room: roomId,
+        description: description,
+      };
 
-      if (response.ok) {
-        Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!');
-        setSelectedIssue(null);
-        setRoomId(null);
-        setDescription('');
-      } else {
-        console.log(await response.text());
-        Alert.alert('Error', 'Failed to submit the report.');
-      }
+      await createReport(report);
+
+      Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!');
+      setSelectedIssue(null);
+      setRoomId(null);
+      setDescription('');
     } catch (err) {
       console.error('Submit error:', err);
       Alert.alert('Error', 'Something went wrong.');
+
+
+      // const response = await fetch(`${BASE_URL}/api/reports/`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   // mode:'no-cors',
+      //   body: JSON.stringify({
+      //     report_type: selectedIssue,
+      //     room: roomId,
+      //     description: description,
+      //   }),
+      // });
+
+    //   if (response.ok) {
+    //     Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!');
+    //     setSelectedIssue(null);
+    //     setRoomId(null);
+    //     setDescription('');
+    //     // fetchData(props); // Refresh data after submission
+    //   } else {
+    //     console.log(await response.text());
+    //     Alert.alert('Error', 'Failed to submit the report.');
+    //   }
+    // } catch (err) {
+    //   console.error('Submit error:', err);
+    //   Alert.alert('Error', 'Something went wrong.');
     }
   };
 
@@ -134,9 +158,12 @@ function ReportScreen() {
             ]}
             onPress={() => setRoomId(room.id)}
           >
-            <Text style={styles.roomText}>Room {room.number}</Text>
+            <Text style={styles.roomText}>{room.name}</Text>
           </TouchableOpacity>
         ))}
+        {rooms.length === 0 && (
+          <Text style={{ color: '#6B7280', marginTop: 8 }}>No rooms available</Text>
+        )}
 
         {/* Description */}
         <Text style={styles.label}>Description</Text>

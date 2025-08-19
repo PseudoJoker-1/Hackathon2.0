@@ -7,17 +7,17 @@ export const useReportStore = create((set) => ({
   selectedReport: null,
   
   fetchReports: async () => {
-    const response = await client.get('/reports/');
+    const response = await client.get('/api/reports/');
     set({ reports: response.data });
   },
   
   fetchReportById: async (id) => {
-    const response = await client.get(`/reports/${id}/`);
+    const response = await client.get(`/api/reports/${id}/`);
     set({ selectedReport: response.data });
   },
   
   createReport: async (report) => {
-    const response = await client.post('/reports/', report);
+    const response = await client.post('/api/reports/', report);
     set((state) => ({ 
       reports: [...state.reports, response.data] 
     }));

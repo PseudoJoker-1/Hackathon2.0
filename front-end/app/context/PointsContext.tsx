@@ -20,7 +20,8 @@ export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
     const token = await AsyncStorage.getItem('access');
     if (!token) return;
     try {
-      const res = await fetch('https://django-api-1082068772584.us-central1.run.app/api/me/', {
+      // const res = await fetch('https://django-api-1082068772584.us-central1.run.app/api/me/', {
+      const res = await fetch('http://localhost:8000/api/me/', { // For local development
         headers: { Authorization: `Bearer ${token}` },
         // mode:'no-cors',
       });
@@ -46,3 +47,4 @@ export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
 
 
 export const usePoints = () => useContext(PointsContext);
+// export default PointsProvider;

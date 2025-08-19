@@ -20,7 +20,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminsScreen() {
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
+  const BASE_URL = 'http://localhost:8000'; // For local development
+
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,6 +82,7 @@ export default function AdminsScreen() {
         {reports.map((report) => (
           <View key={report.id} style={styles.reportCard}>
             <View style={styles.headerRow}>
+              {/* <Text style={styles.reportTitle}>{report.room}</Text> */}
               <Text style={styles.reportTitle}>{report.report_type}</Text>
               <View style={[styles.statusBadge, { backgroundColor: `${statusColors[report.status]}20` }]}>
                 <Text style={[styles.statusText, { color: statusColors[report.status] }]}>{report.status}</Text>

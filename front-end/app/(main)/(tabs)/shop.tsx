@@ -31,8 +31,8 @@ function ShopScreen() {
   const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
-
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const BASE_URL = 'http://localhost:8000'; // For local development
   const colorMap: any = {
     coffee: '#F59E0B',
     library: '#3B82F6',

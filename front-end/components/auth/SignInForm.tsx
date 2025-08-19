@@ -13,7 +13,8 @@ import { useAuth } from '@/app/context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignInForm({ router }: { router: any }) {
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
+  // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
+  const BASE_URL = 'http://localhost:8000'; // For local development  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
