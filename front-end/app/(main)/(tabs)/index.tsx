@@ -26,7 +26,7 @@ interface Leader {
 
 const HomeScreen = () => {
   const [username, setUsername] = useState('')
-  const { points, fetchPoints } = usePoints()
+  const { points, getPoints } = usePoints()
   const [stats, setStats] = useState({ resolved: 0, pending: 0, urgent: 0 })
   const [recentReports, setRecentReports] = useState<Report[]>([])
   const [leaderboard, setLeaderboard] = useState<Leader[]>([])
@@ -34,55 +34,53 @@ const HomeScreen = () => {
   const [isAdmin, setIsAdmin] = useState(false)
 
   // Загружаем все данные для главного экрана
-  const fetchData = useCallback(async () => {
-    const token = await AsyncStorage.getItem('access');
-    const API_URL = 'https://django-api-1082068772584.us-central1.run.app';
-    if (!token) {
-      setLoading(false);
-      return;
+  const fetchData = useCallback(async()=>{
+    const token = await AsyncStorage.getItem('access')
+    const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+    if(!token){
+      setLoading(false)
+      return
     }
-    const headers = { Authorization: `Bearer ${token}` };
-  
-    try {
+    const headers = { Authorization: `Bearer ${token}` }
+    try{
       const [userRes, reportRes, leaderRes] = await Promise.all([
         axios.get(`${API_URL}/api/me/`, { headers }),
         axios.get(`${API_URL}/api/reports/`, { headers }),
         axios.get(`${API_URL}/api/leaderboard/`, { headers }),
-      ]);
-  
-      // Извлекаем данные из ответов
-      const userData = userRes.data;
-      setUsername(userData.username || 'User');
-      setIsAdmin(userData.is_admin === true);
-  
-      const reports: Report[] = reportRes.data;
-      console.log(reports);
-  
-      const resolved = reports.filter(r => r.status === 'resolved').length;
-      const pending = reports.filter(r => r.status === 'pending').length;
-      const urgent = reports.filter(r => r.status === 'urgent').length;
-      setStats({ resolved, pending, urgent });
-      setRecentReports(reports.slice(0, 2));
-  
-      const leaders: Leader[] = leaderRes.data;
-      setLeaderboard(leaders.slice(0, 3));
-    } catch (error) {
-      console.error('API error:', error);
-    } finally {
-      setLoading(false);
+      ])
+
+      const userData = userRes.data
+      setUsername(userData.username || 'User')
+      setIsAdmin(userData.is_admin == true)
+
+      const reports: Report[] = reportRes.data
+      console.log(reports)
+      
+      const resolved = reports.filter((r) => r.status == 'resolved').length
+      const pending = reports.filter((r) => r.status == 'pending').length
+      const urgent = reports.filter((r) => r.status == 'urgent').length
+
+      setStats({ resolved,pending,urgent })
+      setRecentReports(reports.slice(0,2))
+      const leaders: Leader[] = leaderRes.data
+      setLeaderboard(leaders.slice(0,3))
     }
-  }, [points])
+    catch(error){
+      console.error('API error:', error)
+    }
+    finally{
+      setLoading(false)
+    }
+  },[points])
 
   // Обновляем данные при фокусе на экране
   useFocusEffect(
-    useCallback(() => {
+    useCallback(()=>{
       fetchData()
-      fetchPoints()
-    }, [fetchData, fetchPoints])
+      getPoints()
+    },[fetchData,getPoints])
   )
-
-  // Показываем загрузку, пока данные не получены
-  if (loading) {
+  if(loading){
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#3B82F6" />
@@ -93,7 +91,6 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Приветствие и баллы пользователя */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Good morning,</Text>
@@ -104,8 +101,6 @@ const HomeScreen = () => {
             <Text style={styles.pointsText}>{points}</Text>
           </View>
         </View>
-
-        {/* Статистика для администраторов */}
         {isAdmin && (
           <View style={styles.statsContainer}>
             <StatCard icon="checkmark-circle" color="#10B981" label="Resolved" value={stats.resolved} />
@@ -113,8 +108,6 @@ const HomeScreen = () => {
             <StatCard icon="warning" color="#EF4444" label="Urgent" value={stats.urgent} />
           </View>
         )}
-
-        {/* Последние отчеты */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Reports</Text>
           {recentReports.map((r, index) => (
@@ -128,8 +121,6 @@ const HomeScreen = () => {
             </View>
           ))}
         </View>
-
-        {/* Топ участников */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Contributors</Text>
           {leaderboard.map((user, idx) => (
@@ -148,7 +139,7 @@ const HomeScreen = () => {
 }
 
 // Компонент для отображения статистики
-const StatCard = ({ icon, color, label, value }: { icon: any; color: string; label: string; value: number }) => (
+const StatCard = ({icon,color,label,value }:{icon:any; color:string; label:string; value:number})=>(
   <View style={styles.statCard}>
     <Ionicons name={icon} size={20} color={color} style={{ marginBottom: 6 }} />
     <Text style={styles.statNumber}>{value}</Text>

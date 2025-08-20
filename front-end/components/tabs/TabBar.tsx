@@ -22,7 +22,7 @@ export const TabBar = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         // Показываем иконку для каждой вкладки
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({focused,color,size})=>{
           const iconName = tabIcons[route.name as keyof typeof tabIcons] || 'cube'
           return <Ionicons name={iconName as any} size={size} color={color} />
         },

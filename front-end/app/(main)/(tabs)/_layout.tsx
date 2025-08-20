@@ -6,21 +6,21 @@ import { PointsProvider } from '@/app/context/PointsContext'
 export default function TabLayout() {
   const [isAdmin, setIsAdmin] = useState(false)
 
-  // Проверяем, является ли пользователь администратором
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        // Здесь должна быть логика проверки прав администратора
-        // Временно устанавливаем isAdmin в false для всех пользователей
+        // ваще здесь должна быть логика проверки прав администратора
+        // временно устанавливаем isAdmin в false для всех пользователей
         setIsAdmin(false)
-      } catch (error) {
+      }
+      catch(error){
         console.error('Error checking admin status:', error)
         setIsAdmin(false)
       }
     }
 
     checkAdminStatus()
-  }, [])
+  },[])
 
   return (
     <PointsProvider>
@@ -89,7 +89,6 @@ export default function TabLayout() {
             ),
           }}
         />
-        {/* Показываем вкладку администратора только для админов */}
         {/* {!isAdmin && isAdmin && ( */}
           <Tabs.Screen
             name="admin"

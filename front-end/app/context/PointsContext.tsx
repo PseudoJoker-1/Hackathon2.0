@@ -5,25 +5,24 @@ import { ENDPOINTS } from '@/utils/api/endpoints'
 
 type PointsContextType = {
   points: number
-  setPoints: (p: number) => void
-  fetchPoints: () => Promise<void>
+  setPoints: (p: number)=> void
+  getPoints: ()=> Promise<void>
 }
 
 const PointsContext = createContext<PointsContextType>({
   points: 0,
-  setPoints: () => {},
-  fetchPoints: async () => {}, 
+  setPoints: ()=>{},
+  getPoints: async()=>{}, 
 })
 
-export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
+export const PointsProvider = ({children}:{children: React.ReactNode })=>{
   const [points, setPoints] = useState(0)
 
-  // Загружаем баллы пользователя с сервера
-  const fetchPoints = async () => {
+  // загружаем баллы пользователя с сервера
+  const getPoints = async()=>{
     try {
       const token = await AsyncStorage.getItem('access')
-      
-      if (!token) {
+      if(!token){
         console.log('No token found')
         return
       }
@@ -33,18 +32,17 @@ export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
       })
       
       setPoints(response.data.points || 0)
-    } catch (error) {
-      console.error('Failed to fetch points:', error)
+    }
+    catch(error){
+      console.error('Failed to fetch points:',error)
     }
   }
-
-  // Загружаем баллы при запуске приложения
-  useEffect(() => {
-    fetchPoints()
-  }, [])
+  useEffect(()=>{
+    getPoints()
+  },[])
 
   return (
-    <PointsContext.Provider value={{ points, setPoints, fetchPoints }}>
+    <PointsContext.Provider value={{points,setPoints,getPoints}}>
       {children}
     </PointsContext.Provider>
   )

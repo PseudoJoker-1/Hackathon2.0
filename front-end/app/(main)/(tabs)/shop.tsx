@@ -22,6 +22,22 @@ const categories = [
   { id: 'shopping', name: 'Shopping' },
   { id: 'premium', name: 'Premium' },
 ]
+const colorMap = {
+  coffee: '#F59E0B',
+  library: '#3B82F6',
+  parking: '#10B981',
+  credit: '#8B5CF6',
+  premium: '#F59E0B',
+  priority: '#EF4444',
+}
+const iconMap = {
+  coffee: 'cafe',
+  library: 'library',
+  parking: 'car',
+  credit: 'gift',
+  premium: 'diamond',
+  priority: 'flash',
+}
 
 function ShopScreen() {
   const [promoModalVisible, setPromoModalVisible] = useState(false)
@@ -31,89 +47,58 @@ function ShopScreen() {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('all')
 
-  // Цвета для разных типов продуктов
-  const colorMap = {
-    coffee: '#F59E0B',
-    library: '#3B82F6',
-    parking: '#10B981',
-    credit: '#8B5CF6',
-    premium: '#F59E0B',
-    priority: '#EF4444',
-  }
-
-  // Иконки для разных типов продуктов
-  const iconMap = {
-    coffee: 'cafe',
-    library: 'library',
-    parking: 'car',
-    credit: 'gift',
-    premium: 'diamond',
-    priority: 'flash',
-  }
-
-  // Загружаем данные о продуктах и баллах пользователя
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+  useEffect(()=>{
+    const fetchData = async()=>{
+      try{
         const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
-        const [userResponse, productsResponse] = await Promise.all([
+        const [userResponse,productsResponse] = await Promise.all([
           axios.get(`${API_URL}${ENDPOINTS.USER_PROFILE}`),
           axios.get(`${API_URL}${ENDPOINTS.REWARDS}`)
         ])
 
         setPoints(userResponse.data.points || 0)
         setProducts(Array.isArray(productsResponse.data) ? productsResponse.data : [])
-      } catch (error: any) {
-        console.error('Failed to load shop:', error)
-        Alert.alert('Error', 'Failed to load shop')
-      } finally {
+      }
+      catch(error:any){
+        console.error('Failed to load shop',error)
+        Alert.alert('Error','Failed to load shop')
+      }
+      finally{
         setLoading(false)
       }
     }
-
     fetchData()
-  }, [])
-
+  },[])
   // Обмениваем баллы на продукт
-  const redeemItem = async (product: Product) => {
-    try {
+  const redeemItem = async(product:Product)=>{
+    try{
       const response = await axios.post(`${ENDPOINTS.REWARDS}${product.id}/redeem/`)
-      const { remaining_points, code } = response.data
+      const { remaining_points,code } = response.data
       
       setPoints(remaining_points)
       setPromoCode(code)
       setPromoModalVisible(true)
-    } catch (error: any) {
+    }
+    catch(error:any){
       Alert.alert('Error', error.response?.data?.message || 'Failed to redeem item')
     }
   }
-
   // Фильтруем продукты по выбранной категории
-  const filteredProducts = selectedCategory == 'all' ? products : products.filter(p => p.name.includes(selectedCategory))
+  const filteredProducts = selectedCategory == 'all' ? products : products.filter((p) => p.name.includes(selectedCategory))
 
-  // Показываем загрузку пока данные не получены
-  if (loading) {
+  if(loading){
     return <ActivityIndicator size="large" color="#2563EB" style={{ flex: 1 }} />
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Модальное окно с промо-кодом */}
-      <Modal 
-        animationType="slide" 
-        transparent={true} 
-        visible={promoModalVisible} 
-        onRequestClose={() => setPromoModalVisible(false)}
-      >
+      <Modal animationType="slide" transparent={true} visible={promoModalVisible} onRequestClose={()=> setPromoModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Ionicons name="gift" size={40} color="#2563EB" />
             <Text style={styles.modalTitle}>Your Promo Code</Text>
             <Text style={styles.promoCode}>{promoCode}</Text>
-            <TouchableOpacity 
-              onPress={() => setPromoModalVisible(false)} 
-              style={styles.modalButton}
-            >
+            <TouchableOpacity onPress={()=> setPromoModalVisible(false)} style={styles.modalButton}>
               <Text style={styles.modalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -131,32 +116,20 @@ function ShopScreen() {
             <Text style={styles.pointsText}>{points}</Text>
           </View>
         </View>
-
-        {/* Категории продуктов */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-          {categories.map((category, index) => (
-            <TouchableOpacity 
-              key={index} 
-              onPress={() => setSelectedCategory(category.id)} 
-              style={[styles.categoryButton, selectedCategory === category.id && styles.categoryButtonActive]}
-            >
-              <Text style={[styles.categoryText, selectedCategory === category.id && styles.categoryTextActive]}>
+          {categories.map((category,index)=>(
+            <TouchableOpacity key={index} onPress={()=> setSelectedCategory(category.id)} style={[styles.categoryButton, selectedCategory == category.id && styles.categoryButtonActive]} >
+              <Text style={[styles.categoryText, selectedCategory == category.id && styles.categoryTextActive]}>
                 {category.name}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* Список продуктов */}
         <View style={styles.itemsGrid}>
           {filteredProducts?.map((item) => (
             <View key={item.name} style={styles.itemCard}>
               <View style={[styles.itemIcon, { backgroundColor: `${colorMap[item.name as keyof typeof colorMap] || '#ccc'}20` }]}> 
-                <Ionicons 
-                  name={iconMap[item.name as keyof typeof iconMap] || 'cube'} 
-                  size={24} 
-                  color={colorMap[item.name as keyof typeof colorMap] || '#000'} 
-                />
+                <Ionicons name={iconMap[item.name as keyof typeof iconMap] || 'cube' } size={24} color={colorMap[item.name as keyof typeof colorMap] || '#000'}/>
               </View>
               <Text style={styles.itemName}>{item.label}</Text>
               <Text style={styles.itemDescription}>Reward</Text>
@@ -173,8 +146,6 @@ function ShopScreen() {
             </View>
           ))}
         </View>
-
-        {/* Блок с предложением заработать больше баллов */}
         <View style={styles.earnMoreCard}>
           <Text style={styles.earnMoreTitle}>Need more points?</Text>
           <Text style={styles.earnMoreText}>

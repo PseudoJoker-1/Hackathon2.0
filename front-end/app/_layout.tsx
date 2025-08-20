@@ -6,7 +6,6 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady'
 
 // Корневой layout приложения
 export default function RootLayout() {
-  // Инициализация фреймворка (шрифты и т.д.)
   useFrameworkReady()
 
   return (

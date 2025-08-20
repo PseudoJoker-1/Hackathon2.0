@@ -6,12 +6,42 @@ import client from '@/utils/api/client'
 import withAuthProtection from '@/components/common/ProtectedRoute'
 
 const issueTypes = [
-  { id: 'light', name: 'Lighting', icon: 'bulb', color: '#F59E0B' },
-  { id: 'computer', name: 'Computer', icon: 'desktop', color: '#3B82F6' },
-  { id: 'water', name: 'Water/Plumbing', icon: 'water', color: '#14B8A6' },
-  { id: 'wifi', name: 'WiFi/Internet', icon: 'wifi', color: '#8B5CF6' },
-  { id: 'hvac', name: 'Heating/Cooling', icon: 'thermometer', color: '#EF4444' },
-  { id: 'other', name: 'Other', icon: 'warning', color: '#6B7280' },
+  {
+    id:'light',
+    name:'Lighting',
+    icon:'bulb',
+    color:'#F59E0B',
+  },
+  {
+    id:'computer',
+    name:'Computer',
+    icon:'desktop',
+    color:'#3B82F6',
+  },
+  {
+    id:'water',
+    name:'Water/Plumbing',
+    icon:'water',
+    color:'#14B8A6',
+  },
+  {
+    id:'wifi',
+    name:'WiFi/Internet',
+    icon:'wifi',
+    color:'#8B5CF6',
+  },
+  {
+    id:'hvac',
+    name:'Heating/Cooling',
+    icon:'thermometer',
+    color:'#EF4444',
+  },
+  {
+    id:'other',
+    name:'Other',
+    icon:'warning',
+    color:'#6B7280',
+  },
 ]
 
 interface Room {
@@ -20,53 +50,54 @@ interface Room {
 }
 
 function ReportScreen() {
-  const [selectedIssue, setSelectedIssue] = useState<string | null>(null)
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [roomId, setRoomId] = useState<number | null>(null)
-  const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [selectedIssue,setSelectedIssue] = useState<string | null>(null)
+  const [rooms,setRooms] = useState<Room[]>([])
+  const [roomId,setRoomId] = useState<number | null>(null)
+  const [description,setDescription] = useState('')
+  const [loading,setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
+  useEffect(()=>{
+    const fetchRooms = async()=>{
+      try{
         const response = await client.get('/api/rooms/')
         setRooms(response.data)
-      } catch (error) {
-        console.error('Failed to load rooms:', error)
-        Alert.alert('Error', 'Failed to load rooms')
-      } finally {
+      }
+      catch(error){
+        console.error('Failed to load rooms:',error)
+        Alert.alert('Error','Failed to load rooms')
+      }
+      finally{
         setLoading(false)
       }
     }
     fetchRooms()
-  }, [])
-
-  const handleSubmit = async () => {
-    if (!selectedIssue || !roomId || !description) {
-      Alert.alert('Missing Information', 'Please fill in all fields.')
+  },[])
+  const handleSubmit = async()=>{
+    if(!selectedIssue || !roomId || !description){
+      Alert.alert('Missing Information','Please fill in all fields')
       return
     }
-
-    try {
-      const response = await client.post('/api/reports/', {
+    try{
+      const response = await client.post('/api/reports/',{
         report_type: selectedIssue,
         room: roomId,
         description: description,
       })
 
-      if (response.status === 201) {
-        Alert.alert('Success!', 'Your report has been submitted. You earned 50 points!')
+      if(response.status == 201){
+        Alert.alert('Success!','Your report has been submitted, You earned 50 points!')
         setSelectedIssue(null)
         setRoomId(null)
         setDescription('')
       }
-    } catch (error: any) {
-      console.error('Submit error:', error)
-      Alert.alert('Error', error.response?.data?.message || 'Something went wrong.')
+    }
+    catch(error:any){
+      console.error('Submit error',error)
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong')
     }
   }
 
-  if (loading) {
+  if(loading){
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
@@ -78,54 +109,25 @@ function ReportScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Report an Issue</Text>
-
         <Text style={styles.label}>Issue Type</Text>
         <View style={styles.issueGrid}>
-          {issueTypes.map((issue, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.issueCard,
-                selectedIssue === issue.id && styles.issueCardSelected,
-              ]}
-              onPress={() => setSelectedIssue(issue.id)}
-            >
+          {issueTypes.map((issue,index)=>(
+            <TouchableOpacity key={index} style={[styles.issueCard,selectedIssue == issue.id && styles.issueCardSelected]} onPress={()=> setSelectedIssue(issue.id)}>
               <Ionicons name={issue.icon as any} size={20} color={issue.color} />
-              <Text
-                style={{
-                  color: selectedIssue === issue.id ? issue.color : '#374151',
-                }}
-              >
+              <Text style={{color: selectedIssue == issue.id ? issue.color : '#374151',}}>
                 {issue.name}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-
         <Text style={styles.label}>Room</Text>
-        {rooms.map((room, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.roomOption,
-              roomId === room.id && styles.roomSelected,
-            ]}
-            onPress={() => setRoomId(room.id)}
-          >
+        {rooms.map((room,index)=>(
+          <TouchableOpacity key={index} style={[styles.roomOption,roomId == room.id && styles.roomSelected,]} onPress={()=> setRoomId(room.id)}>
             <Text style={styles.roomText}>Room {room.number}</Text>
           </TouchableOpacity>
         ))}
-
         <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.input}
-          multiline
-          placeholder="Describe the issue in detail"
-          value={description}
-          onChangeText={setDescription}
-          textAlignVertical="top"
-        />
-
+        <TextInput style={styles.input} multiline placeholder="Describe the issue in detail" value={description} onChangeText={setDescription} textAlignVertical="top"/>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Ionicons name="send" size={18} color="white" />
           <Text style={styles.submitText}>Submit Report</Text>

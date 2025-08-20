@@ -6,59 +6,60 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import client from '@/utils/api/client'
 import { ENDPOINTS } from '@/utils/api/endpoints'
 
-interface Report {
+interface Report{
   id: number
   report_type: string
   description: string
   status: string
   room: number
 }
-
-const statusColors: Record<string, string> = {
+const statusColors: Record<string, string> ={
   pending: '#F59E0B',
   resolved: '#10B981',
-  urgent: '#EF4444'
+  urgent: '#EF4444',
 }
 
 export default function AdminsScreen() {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchReports = async () => {
-    try {
+  const fetchReports = async()=>{
+    try{
       const response = await client.get(ENDPOINTS.REPORTS)
       setReports(response.data)
-    } catch (error) {
-      console.error('Failed to load reports:', error)
+    }
+    catch(error){
+      console.error('Failed to load reports:',error)
       Alert.alert('Error', 'Failed to load reports')
-    } finally {
+    }
+    finally{
       setLoading(false)
     }
   }
-
-  const updateStatus = async (id: number, newStatus: string) => {
-    try {
-      const response = await client.patch(`${ENDPOINTS.REPORTS}${id}/`, {
+  const updateStatus = async(id:number, newStatus:string)=>{
+    try{
+      const response = await client.patch(`${ENDPOINTS.REPORTS}${id}/`,{
         status: newStatus,
       })
 
-      if (response.status === 200) {
-        Alert.alert('Success', `Marked as ${newStatus}`)
+      if(response.status == 200){
+        Alert.alert('success',`Marked as ${newStatus}`)
         fetchReports()
-      } else {
-        Alert.alert('Error', 'Failed to update status')
       }
-    } catch (error: any) {
-      console.error('Update error:', error)
-      Alert.alert('Error', error.response?.data?.message || 'Request failed')
+      else{
+        Alert.alert('error','Failed to update status')
+      }
+    }
+    catch(error:any){
+      console.error('update error',error)
+      Alert.alert('error',error.response?.data?.message || 'Request failed')
     }
   }
-
-  useEffect(() => {
+  useEffect(()=>{
     fetchReports()
-  }, [])
+  },[])
 
-  if (loading) {
+  if(loading){
     return <ActivityIndicator size="large" color="#2563EB" style={{ flex: 1 }} />
   }
 
@@ -66,13 +67,12 @@ export default function AdminsScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>All Reports</Text>
-
-        {reports.map((report) => (
+        {reports.map((report)=>(
           <View key={report.id} style={styles.reportCard}>
             <View style={styles.headerRow}>
               <Text style={styles.reportTitle}>{report.report_type}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: `${statusColors[report.status]}20` }]}>
-                <Text style={[styles.statusText, { color: statusColors[report.status] }]}>
+              <View style={[styles.statusBadge,{backgroundColor: `${statusColors[report.status]}20` }]}>
+                <Text style={[styles.statusText,{color: statusColors[report.status] }]}>
                   {report.status.toUpperCase()}
                 </Text>
               </View>
@@ -99,8 +99,7 @@ export default function AdminsScreen() {
             </View>
           </View>
         ))}
-
-        {reports.length === 0 && (
+        {reports.length == 0 && (
           <Text style={styles.emptyText}>No reports available</Text>
         )}
       </ScrollView>

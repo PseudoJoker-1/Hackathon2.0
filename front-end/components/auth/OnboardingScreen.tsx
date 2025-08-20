@@ -83,7 +83,6 @@ export default function OnboardingScreen() {
       />
       
       <View className="px-10 pb-12">
-        {/* Индикаторы прогресса */}
         <View className="flex-row justify-center mb-10">
           {onboardingData.map((_, index) => (
             <View 
@@ -94,8 +93,6 @@ export default function OnboardingScreen() {
             />
           ))}
         </View>
-
-        {/* Кнопки */}
         <View className="flex-row justify-between items-center">
           <TouchableOpacity onPress={handleSkip}>
             <Text className="text-base text-blue-200">Skip</Text>
@@ -106,7 +103,7 @@ export default function OnboardingScreen() {
             onPress={handleNext}
           >
             <Text className="text-base font-semibold text-blue-900">
-              {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
+              {currentIndex == onboardingData.length - 1 ? 'Get Started' : 'Next'}
             </Text>
           </TouchableOpacity>
         </View>

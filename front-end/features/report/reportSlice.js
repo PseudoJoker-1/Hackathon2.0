@@ -8,35 +8,38 @@ export const useReportStore = create((set) => ({
   selectedReport: null,
   
   // Загружаем все отчеты с сервера
-  fetchReports: async () => {
-    try {
+  fetchReports: async()=>{
+    try{
       const response = await client.get('api/reports/')
       set({ reports: response.data })
-    } catch (error) {
-      console.error('Ошибка при загрузке отчетов:', error)
+    }
+    catch(error){
+      console.error('Ошибка при загрузке отчетов:',error)
     }
   },
   
   // Загружаем конкретный отчет по ID
-  fetchReportById: async (id) => {
-    try {
+  fetchReportById: async(id)=>{
+    try{
       const response = await client.get(`api/reports/${id}/`)
       set({ selectedReport: response.data })
-    } catch (error) {
-      console.error('Ошибка при загрузке отчета:', error)
+    }
+    catch(error){
+      console.error('Ошибка при загрузке отчета:',error)
     }
   },
   
   // Создаем новый отчет
-  createReport: async (report) => {
-    try {
+  createReport: async(report)=>{
+    try{
       const response = await client.post('api/reports/', report)
-      set((state) => ({ 
+      set((state)=>({ 
         reports: [...state.reports, response.data] 
       }))
       return response.data
-    } catch (error) {
-      console.error('Ошибка при создании отчета:', error)
+    }
+    catch(error){
+      console.error('Ошибка при создании отчета:',error)
       throw error
     }
   }

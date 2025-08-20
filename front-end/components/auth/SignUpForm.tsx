@@ -1,94 +1,87 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-// import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {useState} from 'react'
+import { View,Text,StyleSheet,TextInput,TouchableOpacity,Alert } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import axios from 'axios'
 
-export default function SignUpForm({ router }: { router: any }) {
-//   const router = useRouter();
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
-  const [code, setCode] = useState<string>('');
-  const [showCodeField, setShowCode] = useState<boolean>(false);
-  const requestCode = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-    try {
-      const res = await fetch(`${BASE_URL}/api/send-code/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const errorText = await res.text();
-      if (res.ok) setShowCode(true);
-      else Alert.alert('Ошибка', errorText);
-    } catch (err) {
-      Alert.alert('Ошибка', 'Сервер не отвечает');
-    }
-  };
+export default function SignUpForm({ router }:{ router: any }){
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+  const [name, setName] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
+  const [code, setCode] = useState<string>('')
+  const [showCodeField, setShowCode] = useState<boolean>(false)
 
-  const loginAndSaveTokens = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/api/token/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      console.log('Login response:', res.status, data); // Add this line
-      if (!res.ok) throw new Error('Ошибка входа');
-      await AsyncStorage.setItem('access', data.access);
-      await AsyncStorage.setItem('refresh', data.refresh);
-      router.replace('/(tabs)');
-    } catch (err) {
-      Alert.alert('Ошибка', 'Не удалось войти автоматически после регистрации');
+  const requestCode = async()=>{
+    if(!name || !email || !password || !confirmPassword){
+      Alert.alert('Error', 'Please fill in all fields')
+      return
     }
-  };
-
-  const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+    if(password !== confirmPassword){
+      Alert.alert('Error', 'Passwords do not match')
+      return
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-    try {
-      const res = await fetch(`${BASE_URL}/api/verify-register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: name, email, password, code }),
-      });
-      if (res.ok) {
-        await loginAndSaveTokens();
-      } else {
-        const err = await res.text();
-        console.error('Ошибка регистрации', err);
-        Alert.alert('Ошибка', 'Регистрация не удалась');
+    try{
+      const res = await axios.post(`${BASE_URL}/api/send-code/`,{ email })
+      if(res.status == 200){
+        setShowCode(true);
       }
-    } catch (error) {
-      Alert.alert('Ошибка', 'Сервер не отвечает');
+      else{
+        Alert.alert('Ошибка', res.data.message || 'Не удалось отправить код')
+      }
     }
-  };
+    catch(error){
+      console.error('Server Error',error);
+      Alert.alert('Ошибка', 'Сервер не отвечает')
+    }
+  }
+  const loginAndSaveTokens = async()=>{
+    try{
+      const res = await axios.post(`${BASE_URL}/api/token/`,{ email,password})
+      if(res.status == 200){
+        const { access, refresh } = res.data
+        await AsyncStorage.setItem('access', access)
+        await AsyncStorage.setItem('refresh', refresh)
+        router.replace('/(main)/(tabs)/')
+      }
+      else{
+        throw new Error('Ошибка входа')
+      }
+    }
+    catch(error){
+      Alert.alert('Ошибка','Не удалось войти автоматически после регистрации')
+    }
+  }
+  const handleRegister = async()=>{
+    if(!name || !email || !password || !confirmPassword){
+      Alert.alert('Error', 'Please fill in all fields')
+      return
+    }
+    if(password !== confirmPassword){
+      Alert.alert('Error', 'Passwords do not match')
+      return
+    }
+    try{
+      const res = await axios.post(`${BASE_URL}/api/verify-register/`,{
+        username: name,
+        email,
+        password,
+        code,
+      })
+      if(res.status == 200){
+        await loginAndSaveTokens()
+      }
+      else{
+        Alert.alert('Ошибка', res.data.message || 'Регистрация не удалась')
+      }
+    }
+    catch(error){
+      Alert.alert('Ошибка', 'Сервер не отвечает')
+    }
+  }
 
   return (
     <View style={styles.container}>

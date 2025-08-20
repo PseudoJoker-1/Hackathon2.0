@@ -1,6 +1,6 @@
-// Основные типы данных, которые используются во всем приложении
+// основные типы данных, которые используются во всем приложении
 
-// Пользователь приложения
+// пользователь приложения
 export interface User {
   id: string
   name: string
@@ -10,7 +10,7 @@ export interface User {
   role: 'user' | 'admin'
 }
 
-// Сообщение о проблеме
+// сообщение о проблеме
 export interface Report {
   id: string
   title: string
@@ -28,7 +28,7 @@ export interface Report {
   images?: string[]
 }
 
-// Награда в магазине
+// награда в магазине
 export interface Reward {
   id: string
   name: string
@@ -37,7 +37,7 @@ export interface Reward {
   image: string
 }
 
-// Тип проблемы для отчета
+// тип проблемы для отчета
 export interface ReportType {
   id: string
   name: string

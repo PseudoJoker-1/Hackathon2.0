@@ -18,28 +18,28 @@ const LeaderboardScreen = () => {
   const [leaders, setLeaders] = useState<Leader[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Загружаем таблицу лидеров
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
+  useEffect(()=>{
+    const fetchLeaderboard = async()=>{
+      try{
         const token = await AsyncStorage.getItem('access')
         const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
         const response = await axios.get(`${BASE_URL}/api/leaderboard/`,{
           headers: {Authorization: `Bearer ${token}`},
         })
         setLeaders(response.data)
-      } catch (error) {
-        console.error('Failed to load leaderboard:', error)
-      } finally {
+      }
+      catch(error){
+        console.error('Failed to load leaderboard',error)
+      }
+      finally{
         setLoading(false)
       }
     }
-
     fetchLeaderboard()
-  }, [])
+  },[])
 
   // Показываем загрузку, пока данные не получены
-  if (loading) {
+  if(loading){
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#2563EB" />
@@ -65,7 +65,7 @@ const LeaderboardScreen = () => {
               <Text style={styles.name}>{user.name}</Text>
               <Text style={styles.points}>{user.points} points</Text>
             </View>
-            {index === 0 && (
+            {index == 0 && (
               <Ionicons name="trophy" size={18} color="#F59E0B" />
             )}
           </View>

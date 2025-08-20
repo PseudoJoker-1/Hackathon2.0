@@ -7,17 +7,15 @@ interface ReportDetailProps {
   report: Report
 }
 
-export const ReportDetail = ({ report }: ReportDetailProps) => {
-  // Находим тип отчета по его ID
-  const reportType = reportTypes.find(type => type.id === report.type)
+export const ReportDetail = ({report}: ReportDetailProps)=>{
+  const reportType = reportTypes.find((type) => type.id == report.type)
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.typeContainer}>
           {reportType?.icon && (
-            <Ionicons 
-              name={reportType.icon as keyof typeof Ionicons.glyphMap} 
+            <Ionicons name={reportType.icon as keyof typeof Ionicons.glyphMap} 
               size={14} 
               color={reportType.color}
             />

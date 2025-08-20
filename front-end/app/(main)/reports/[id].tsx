@@ -5,25 +5,23 @@ import { useEffect } from 'react'
 import { ReportDetail } from '@/components/features/report/ReportDetail'
 import { Button } from '@/components/ui/Button'
 
-export default function ReportDetailsPage() {
+export default function ReportDetailsPage(){
   const { id } = useLocalSearchParams()
   const { selectedReport, fetchReportById } = useReportStore()
-  
-  // Загружаем данные отчета при открытии страницы
-  useEffect(() => {
-    if (id) {
+
+  useEffect(()=>{
+    if(id){
       fetchReportById(id as string)
     }
-  }, [id])
+  },[id])
 
   // Обрабатываем загрузку изображений
   const handleImageUpload = async (uri: string) => {
-    // Здесь будет логика загрузки изображений
-    console.log('Uploading image:', uri)
+    // тут будет логика загрузки изображений
+    console.log('uploading image',uri)
   }
-
   // Показываем загрузку пока данные не получены
-  if (!selectedReport) {
+  if(!selectedReport){
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1E3A8A" />

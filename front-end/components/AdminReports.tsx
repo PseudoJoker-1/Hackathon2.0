@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 
+
+
+
 const reportData = [
   {
     id: 1,
@@ -41,19 +44,14 @@ const reportData = [
     points: 50,
   },
 ]
+const statusFilters = ['All','Pending','In Progress','Resolved']
 
-const statusFilters = ['All', 'Pending', 'In Progress', 'Resolved']
-
-export default function AdminReports() {
+export default function AdminReports(){
   const [selectedFilter, setSelectedFilter] = useState('All')
-
-  // Фильтруем отчеты по выбранному статусу
-  const filteredReports = selectedFilter === 'All' 
-    ? reportData 
-    : reportData.filter(report => report.status === selectedFilter.toLowerCase().replace(' ', '-'))
+  const filteredReports = selectedFilter == 'All' ? reportData : reportData.filter((report) => report.status == selectedFilter.toLowerCase().replace(' ', '-'))
 
   // Выбираем цвет в зависимости от статуса
-  const getStatusColor = (status: string) => {
+  const getStatusColor =(status: string)=>{
     const statusColors = {
       'pending': '#F59E0B',
       'in-progress': '#3B82F6',
@@ -62,9 +60,8 @@ export default function AdminReports() {
     }
     return statusColors[status] || statusColors.default
   }
-
   // Выбираем цвет в зависимости от приоритета
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor =(priority: string)=>{
     const priorityColors = {
       'high': '#EF4444',
       'medium': '#F59E0B',
@@ -73,9 +70,8 @@ export default function AdminReports() {
     }
     return priorityColors[priority] || priorityColors.default
   }
-
   // Выбираем иконку в зависимости от статуса
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon =(status: string)=>{
     const statusIcons = {
       'pending': <Ionicons name="time" size={16} color="#F59E0B" />,
       'in-progress': <Ionicons name="warning" size={16} color="#3B82F6" />,

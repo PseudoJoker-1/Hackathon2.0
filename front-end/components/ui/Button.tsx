@@ -7,14 +7,8 @@ interface ButtonProps {
   fullWidth?: boolean
 }
 
-export const Button = ({ 
-  title, 
-  onPress, 
-  variant = 'primary',
-  fullWidth = false,
-}: ButtonProps) => {
-  // Выбираем стиль кнопки в зависимости от варианта
-  const getVariantStyle = ()=>{
+export const Button = ({title,onPress, variant = 'primary',fullWidth = false}: ButtonProps)=>{
+  const getVariantStyle =()=>{
     const variantStyles = {
       'primary': styles.primary,
       'secondary': styles.secondary,
@@ -24,11 +18,8 @@ export const Button = ({
   }
 
   return (
-    <TouchableOpacity 
-      style={[styles.button, getVariantStyle(), fullWidth && styles.fullWidth]} 
-      onPress={onPress}
-    >
-      <Text style={[styles.text, variant === 'outline' ? styles.outlineText : styles.primaryText]}>
+    <TouchableOpacity style={[styles.button,getVariantStyle(), fullWidth && styles.fullWidth]} onPress={onPress}>
+      <Text style={[styles.text, variant == 'outline' ? styles.outlineText : styles.primaryText]}>
         {title}
       </Text>
     </TouchableOpacity>

@@ -14,7 +14,6 @@ interface Report {
   report_type: string
   created_at?: string
 }
-
 interface UserData {
   FIO: string
   points: number
@@ -27,20 +26,24 @@ function ProfileScreen() {
   const [loading, setLoading] = useState(true)
 
   // Загружаем данные профиля пользователя
-  const fetchProfile = async () => {
-    const token = await AsyncStorage.getItem('access');
+  const fetchProfile = async()=>{
+    const token = await AsyncStorage.getItem('access')
     const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
-    try {
-      const [meRes, reportsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/me/`, {
-          headers: { Authorization: `Bearer ${token}` },
-          // mode:'no-cors',
-        }),
-        axios.get(`${API_URL}/api/reports/`, {
-          headers: { Authorization: `Bearer ${token}` },
-          // mode:'no-cors',
-        })
-      ]);
+    try{
+      const [meRes,reportsRes] = await Promise.all([
+        axios.get(`${API_URL}/api/me/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            // mode:'no-cors',
+          }
+        ),
+        axios.get(`${API_URL}/api/reports/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            // mode:'no-cors',
+          }
+        )
+      ])
 
       const userData = await meRes.data
       const reportData = await reportsRes.data
@@ -48,37 +51,35 @@ function ProfileScreen() {
       setUser({
         FIO: userData.FIO || userData.username,
         points: userData.points,
-        rank: 3 // можно заменить реальным ранком, если доступен
-      });
-
-      // фильтрация только пользовательских репортов
-      const myReports = reportData.filter((r: any) => r.user === userData.id);
-      setReports(myReports);
-    } catch (e) {
-      console.error('Error loading profile', e);
-    } finally {
-      setLoading(false);
+        rank: 3, // можно заменить реальным ранком, если он у нас есть доступен
+      })
+      const myReports = reportData.filter((r:any)=> r.user == userData.id)
+      setReports(myReports)
+    }
+    catch(error){
+      console.error('Error loading profile',error);
+    }
+    finally{
+      setLoading(false)
     }
   }
 
-  useEffect(() => {
+  useEffect(()=>{
     fetchProfile()
-  }, [])
+  },[])
 
-  // Показываем загрузку, пока данные не получены
-  if (loading || !user) {
+  if(loading || !user){
     return <ActivityIndicator size="large" style={{ flex: 1 }} color="#2563EB" />
   }
 
-  // Считаем статистику отчетов
+  // подсчеты статистики отчетов
   const totalReports = reports.length
-  const resolvedReports = reports.filter(r => r.status === 'resolved').length
+  const resolvedReports = reports.filter((r) => r.status == 'resolved').length
   const successRate = totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 0
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {/* Заголовок с информацией о пользователе */}
         <View style={styles.header}>
           <View style={styles.profileSection}>
             <View style={styles.avatar}>
@@ -89,8 +90,6 @@ function ProfileScreen() {
             </View>
           </View>
         </View>
-
-        {/* Карточки со статистикой */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
@@ -110,8 +109,6 @@ function ProfileScreen() {
             <Text style={styles.statChange}>+1 from last week</Text>
           </View>
         </View>
-
-        {/* Статистика отчетов */}
         <View style={styles.reportStatsCard}>
           <Text style={styles.cardTitle}>Report Statistics</Text>
           <View style={styles.reportStatsGrid}>
@@ -138,8 +135,6 @@ function ProfileScreen() {
             </View>
           </View>
         </View>
-
-        {/* Последняя активность */}
         <View style={styles.activityCard}>
           <Text style={styles.cardTitle}>Recent Activity</Text>
           {reports.slice(0, 4).map((r) => (

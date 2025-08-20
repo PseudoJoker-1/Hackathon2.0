@@ -1,10 +1,7 @@
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// базовый URL нашего API
 export const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
-
-// тут создаем основного клиента для запросов
 const client = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -25,34 +22,26 @@ client.interceptors.request.use(async (config) => {
 })
 
 // тут мы перехватывает ошибки и пытается обновить токен если он устарел
-client.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+client.interceptors.response.use((response)=> response,
+async(error)=>{
     const originalRequest = error.config
-    
-    // Если ошибка 401 (несанкционировано) и мы еще не пробовали обновить токен
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if(error.response?.status == 401 && !originalRequest._retry){
       originalRequest._retry = true
-      
-      try {
+      try{
         const refreshToken = await AsyncStorage.getItem('refresh')
-        if (refreshToken) {
-          // Пробуем обновить access токен с помощью refresh токена
-          const response = await axios.post(`${API_URL}/api/token/refresh/`, {
+        if(refreshToken){
+          const response = await axios.post(`${API_URL}/api/token/refresh/`,{
             refresh: refreshToken
           })
-          
           const { access } = response.data
           // Сохраняем новый токен
-          await AsyncStorage.setItem('access', access)
-          
-          // Пробуем запрос снова с новым токеном
+          await AsyncStorage.setItem('access',access)
           originalRequest.headers.Authorization = `Bearer ${access}`
           return client(originalRequest)
         }
-      } catch (refreshError) {
-        console.error('Не удалось обновить токен:', refreshError)
-        // Если не получилось - разлогиниваем пользователя
+      }
+      catch(refreshError){
+        console.error('Error token',refreshError)
         await AsyncStorage.removeItem('access')
         await AsyncStorage.removeItem('refresh')
       }
