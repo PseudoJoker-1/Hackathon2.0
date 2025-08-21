@@ -1,27 +1,29 @@
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { Report } from '@/types';
-// import { formatDate } from '@/utils/helpers/formatters';
-import { reportTypes } from '@/utils/constants/reportTypes';
+import { View, Text, StyleSheet, Image } from 'react-native'
+import { Report } from '@/types'
+import { reportTypes } from '@/utils/constants/reportTypes'
+import { Ionicons } from '@expo/vector-icons'
 
 interface ReportDetailProps {
-  report: Report;
+  report: Report
 }
 
-export const ReportDetail = ({ report }: ReportDetailProps) => {
-  const reportType = reportTypes.find(type => type.id === report.type);
-  
+export const ReportDetail = ({report}: ReportDetailProps)=>{
+  const reportType = reportTypes.find((type) => type.id == report.type)
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.typeContainer}>
           {reportType?.icon && (
-            <Image source={reportType.icon}/>
+            <Ionicons name={reportType.icon as keyof typeof Ionicons.glyphMap} 
+              size={14} 
+              color={reportType.color}
+            />
           )}
           <Text style={[styles.type, { color: reportType?.color }]}>
             {reportType?.name}
           </Text>
         </View>
-        {/* <Text style={styles.date}>{formatDate(report.createdAt)}</Text> */}
       </View>
       
       <Text style={styles.title}>{report.title}</Text>
@@ -35,8 +37,8 @@ export const ReportDetail = ({ report }: ReportDetailProps) => {
         <Text style={styles.userName}>{report.user.name}</Text>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -58,10 +60,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  date: {
-    fontSize: 12,
-    color: '#6B7280',
   },
   title: {
     fontSize: 18,
@@ -89,4 +87,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#475569',
   }
-});
+})
