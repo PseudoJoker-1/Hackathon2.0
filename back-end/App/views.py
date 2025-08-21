@@ -11,7 +11,8 @@ from rest_framework.response    import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404, redirect
-from .models import Rooms, Report
+# from .models import Rooms, Report
+from .models import Room, Report
 from .forms import ReportForm
 from rest_framework import viewsets
 from .serializers import RoomSerializer, ReportSerializer
@@ -22,7 +23,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.utils.timesince import timesince
 from datetime import datetime
 
-from App.models import Facility, Rooms
+from App.models import Facility, Room
 
 
 # Create your views here.
@@ -101,13 +102,13 @@ def create_lobby(request):
     # создаём комнаты
     rooms = [r.strip() for r in rooms_raw.split(",") if r.strip()]
     for room_name in rooms:
-        Rooms.objects.create(name=room_name, facility=facility)
+        Room.objects.create(name=room_name, facility=facility)
 
     return Response({"message": "Lobby created successfully"}, status=status.HTTP_201_CREATED)
 
 class RoomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = Rooms.objects.all()
+    queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
 class ReportViewSet(viewsets.ModelViewSet):

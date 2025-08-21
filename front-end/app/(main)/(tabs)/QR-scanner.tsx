@@ -7,6 +7,7 @@ import { useIsFocused } from "@react-navigation/native";
 import withAuthProtection from "@/components/common/ProtectedRoute";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
+import { config } from "@/config";
 
 const { width, height } = Dimensions.get("window");
 const squareSize = width * 0.7;
@@ -52,7 +53,8 @@ function QRScannerScreen() {
   const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
     setScanned(true);
 
-    if (data.includes("http://localhost:8081/report")) {
+    // if (data.includes("http://localhost:8081/report")) {
+    if (data.includes(`${config.URL}:8081/report`)) {
       router.push("/report"); // ⬅️ переход внутри приложения
     } else {
       // fallback, если это внешняя ссылка

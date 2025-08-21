@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import withAuthProtection from '@/components/common/ProtectedRoute';
 import { usePoints } from '@/app/context/PointsContext';
+import { config } from '@/config';
 
 interface Leader {
   id: number;
@@ -16,7 +17,10 @@ const LeaderboardScreen = () => {
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
-  const BASE_URL = 'http://localhost:8000'; // For local development;
+  // const BASE_URL = 'http://localhost:8000'; // For local development;
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {

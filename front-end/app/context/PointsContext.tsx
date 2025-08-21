@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { config } from '@/config';
 
 type PointsContextType = {
   points: number;
@@ -21,7 +22,8 @@ export const PointsProvider = ({ children }: { children: React.ReactNode }) => {
     if (!token) return;
     try {
       // const res = await fetch('https://django-api-1082068772584.us-central1.run.app/api/me/', {
-      const res = await fetch('http://localhost:8000/api/me/', { // For local development
+      // const res = await fetch('http://localhost:8000/api/me/', { // For local development
+      const res = await fetch(`${config.URL}:8000/api/me/`, { // For local development
         headers: { Authorization: `Bearer ${token}` },
         // mode:'no-cors',
       });

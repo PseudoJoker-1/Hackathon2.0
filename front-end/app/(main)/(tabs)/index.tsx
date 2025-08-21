@@ -9,6 +9,8 @@ import { usePoints } from '../../context/PointsContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from "expo-router";  // ✅ нужно импортировать
 // import { fetchPoints } from '@/app/context/PointsContext.js';
+import { config } from '@/config';
+
 interface Report {
   id: number;
   report_type: string;
@@ -34,8 +36,10 @@ const HomeScreen = () => {
   const router = useRouter();
   
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
-  const BASE_URL = 'http://localhost:8000';  
-
+  // const BASE_URL = 'http://localhost:8000';  
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   const fetchData = useCallback(async () => {
     const token = await AsyncStorage.getItem('access');
     if (!token) {

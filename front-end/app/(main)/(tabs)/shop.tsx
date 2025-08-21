@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '@/components/common/ProtectedRoute';
 import { Modal } from 'react-native';
-
+import { config } from '@/config';
 
 interface Product {
   id: number | string;
@@ -32,7 +32,10 @@ function ShopScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
-  const BASE_URL = 'http://localhost:8000'; // For local development
+  // const BASE_URL = 'http://localhost:8000'; // For local development
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   const colorMap: any = {
     coffee: '#F59E0B',
     library: '#3B82F6',

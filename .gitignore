@@ -1,5 +1,8 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# config.json
+front-end/config.json
+
 # dependencies
 # node_modules/
 front-end/node_modules/
@@ -121,3 +124,15 @@ back-end/Hackathon/__pycache__/__init__.cpython-313.pyc
 back-end/Hackathon/__pycache__/settings.cpython-313.pyc
 back-end/Hackathon/__pycache__/urls.cpython-313.pyc
 back-end/Hackathon/__pycache__/wsgi.cpython-313.pyc
+
+*.pyc
+back-end/App/__pycache__/
+back-end/App/__pycache__/__init__.cpython-313.pyc
+back-end/App/__pycache__/admin.cpython-313.pyc
+back-end/App/__pycache__/apps.cpython-313.pyc
+back-end/App/__pycache__/appurls.cpython-313.pyc
+back-end/App/__pycache__/backends.cpython-313.pyc
+back-end/App/__pycache__/forms.cpython-313.pyc
+back-end/App/__pycache__/models.cpython-313.pyc
+back-end/App/__pycache__/serializers.cpython-313.pyc
+back-end/App/__pycache__/views.cpython-313.pyc

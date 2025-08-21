@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '@/components/common/ProtectedRoute';
+import { config } from '@/config';
 
 interface Report {
   id: number;
@@ -25,8 +26,10 @@ function ProfileScreen() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
-  const BASE_URL = 'http://localhost:8000'; // For local development
-
+  // const BASE_URL = 'http://localhost:8000'; // For local development
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   const fetchProfile = async () => {
     const token = await AsyncStorage.getItem('access');
     try {

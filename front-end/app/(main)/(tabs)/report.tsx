@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import withAuthProtection from '@/components/common/ProtectedRoute';
 import { useReportStore } from '@/features/report/reportSlice';
+import { config } from '@/config';
 
 const issueTypes = [
   { id: 'light', name: 'Lighting', icon: 'bulb', color: '#F59E0B' },
@@ -31,8 +32,10 @@ function ReportScreen() {
   const [loading, setLoading] = useState(true);
   const { createReport } = useReportStore();
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
-  const BASE_URL = 'http://localhost:8000'; // For local development
-
+  // const BASE_URL = 'http://localhost:8000'; // For local development
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   useEffect(() => {
     const fetchRooms = async () => {
       try {

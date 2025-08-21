@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { config } from "@/config";
 
 export default function CreateLobby() {
   const [name, setName] = useState("");
@@ -14,8 +15,9 @@ export default function CreateLobby() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/create_lobby/", {
-        method: "POST",
+      // const res = await fetch("http://localhost:8000/api/create_lobby/", {
+      const res = await fetch(`${config.URL}:8000/api/create_lobby/`, {
+      method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, rooms }),
       });

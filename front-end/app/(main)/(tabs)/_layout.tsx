@@ -4,11 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PointsProvider } from '@/app/context/PointsContext';
+import { config } from '@/config';
 
 export default function TabLayout() {
   const [isAdmin, setIsAdmin] = useState(false);
   // const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';
-  const BASE_URL = 'http://localhost:8000'; // For local development
+  // const BASE_URL = 'http://localhost:8000'; // For local development
+  const { URL } = config;
+  const BASE_URL = `${URL}:8000`;
+  
   useEffect(() => {
     const fetchUser = async () => {
       const token = await AsyncStorage.getItem('access');

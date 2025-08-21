@@ -79,7 +79,8 @@ class VerifyCodeSerializer(serializers.Serializer):
         return user
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rooms
+        # model = Rooms
+        model = Room
         # fields = ['id', 'number']
         fields = ['id', 'facility', 'name']
 
