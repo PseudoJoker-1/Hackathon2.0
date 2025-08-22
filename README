@@ -1,0 +1,93 @@
+
+
+---
+
+ Description
+
+This is a modern mobile app for students and campus staff that allows users to:
+
+* Report issues (breakdowns, WiFi problems, water leaks, etc.)
+* Earn points for activity and redeem them for prizes
+* Track personal stats and ranking
+* View top participants and overall campus activity
+* For administrators — manage tickets and statuses
+
+The backend is built with Django + DRF, and the frontend is made with React Native (Expo).
+
+---
+
+ Core Features
+
+* User authentication and registration (with email verification)
+* Submitting maintenance reports categorized by type and room
+* Personal dashboard: points, rank, activity history, report stats
+* Shop: redeem points for real rewards/coupons
+* Leaderboard: top 10 participants by score
+* Admin panel: view and update report statuses
+
+---
+
+ Technologies
+
+* **Backend:** Django 5.2, Django REST Framework, SimpleJWT, django-filter, django-cors-headers
+* **Frontend:** React Native (Expo), TypeScript
+* **Database:** SQLite (default)
+* **Deployment:** Docker for backend deployment
+
+---
+
+ Quick Start
+
+Backend
+
+1. Install dependencies:
+
+   sh
+   pip install -r requirements.txt
+   ```
+
+2. Apply migrations:
+
+   sh python manage.py migrate
+   
+
+3. Run the development server:
+
+   sh python manage.py runserver
+ 
+
+4. Using Docker:
+
+   sh docker build -t hackathon-backend .
+   docker run -p 8000:8000 hackathon-backend
+
+
+Frontend
+
+1. Navigate to the app directory and install dependencies:
+
+   sh
+   npm install
+
+2. Start Expo:
+
+    sh
+   npx expo start
+ 
+
+3. Scan the QR code with Expo Go or launch in an emulator.
+
+---
+
+ API Endpoints
+
+ `POST /api/send-code/` — send verification code via email
+ `POST /api/verify-register/` — register user with code
+ `POST /api/token/` — obtain JWT token
+ `GET /api/me/` — get current user info
+ `GET /api/reports/` — list all reports
+ `POST /api/reports/` — create a new report
+ `GET /api/leaderboard/` — get top participants
+ `POST /api/redeem/<product_id>/` — redeem points for a prize
+
+---
