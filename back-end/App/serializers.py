@@ -175,3 +175,9 @@ class FacilityListSerializer(serializers.ModelSerializer):
     def get_joined_at(self, obj):
         m = self._membership(obj)
         return m.joined_at if m else None
+    
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = '__all__'
+        read_only_fields = ['created_at']

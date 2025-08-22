@@ -147,6 +147,8 @@ class ReportViewSet(viewsets.ModelViewSet):
 class ProductVS(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+
     
 # Не рабочий Leaderboard. Берет points из user.
 # class LeaderboardView(APIView):
@@ -205,6 +207,12 @@ class FacilityViewSet(viewsets.ModelViewSet):
     def mine(self, request):
         qs = self.get_queryset().filter(memberships__user=request.user).distinct()
         return Response(self.get_serializer(qs, many=True).data)
+    
+class OrganizationView(viewsets.ModelViewSet):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    
+
 
 class WalletView(viewsets.ModelViewSet):
     queryset = Wallet.objects.all()

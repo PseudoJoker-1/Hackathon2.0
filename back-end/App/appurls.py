@@ -11,6 +11,7 @@ router.register(r'users', UserVS, basename='user')
 router.register(r'product', ProductVS, basename="product")
 router.register(r'wallet',WalletView)
 router.register(r'facility',FacilityViewSet)
+router.register(r'organizations', OrganizationView)
 
 
 urlpatterns = router.urls
