@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import { Report } from '@/types'
 import client from '@/utils/api/client'
 
-// Хранилище Zustand для управления отчетами
+// хранилище Zustand для управления отчетами
 export const useReportStore = create((set) => ({
   reports: [],
   selectedReport: null,
   
-  // Загружаем все отчеты с сервера
+  // загружаем все отчеты с сервера
   fetchReports: async()=>{
     try{
       const response = await client.get('api/reports/')
@@ -18,7 +18,7 @@ export const useReportStore = create((set) => ({
     }
   },
   
-  // Загружаем конкретный отчет по ID
+  // загружаем конкретный отчет по ID
   fetchReportById: async(id)=>{
     try{
       const response = await client.get(`api/reports/${id}/`)
@@ -29,7 +29,7 @@ export const useReportStore = create((set) => ({
     }
   },
   
-  // Создаем новый отчет
+  // создаем новый отчет
   createReport: async(report)=>{
     try{
       const response = await client.post('api/reports/', report)

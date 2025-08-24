@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
 import HomeScreen from '@/app/(main)/(tabs)/index'
-import ShopScreen from '@/app/(main)/(tabs)/shop'
-import LeaderboardScreen from '@/app/(main)/(tabs)/leaderboard'
-import ProfileScreen from '@/app/(main)/(tabs)/profile'
+import ShopScreen from '@/app/(main)/(screens)/Shop/shop'
+import LeaderboardScreen from '@/app/(main)/(screens)/LeaderBoard/leaderboard'
+import ProfileScreen from '@/app/(main)/(screens)/profile/profile'
 
 const Tab = createBottomTabNavigator()
 

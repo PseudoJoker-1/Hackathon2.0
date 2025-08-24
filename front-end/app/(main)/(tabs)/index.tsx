@@ -54,7 +54,7 @@ const HomeScreen = () => {
       setIsAdmin(userData.is_admin == true)
 
       const reports: Report[] = reportRes.data
-      console.log(reports)
+      // console.log(reports)
       
       const resolved = reports.filter((r) => r.status == 'resolved').length
       const pending = reports.filter((r) => r.status == 'pending').length
@@ -101,13 +101,12 @@ const HomeScreen = () => {
             <Text style={styles.pointsText}>{points}</Text>
           </View>
         </View>
-        {isAdmin && (
-          <View style={styles.statsContainer}>
-            <StatCard icon="checkmark-circle" color="#10B981" label="Resolved" value={stats.resolved} />
-            <StatCard icon="time" color="#F59E0B" label="Pending" value={stats.pending} />
-            <StatCard icon="warning" color="#EF4444" label="Urgent" value={stats.urgent} />
-          </View>
-        )}
+        {/* я сам добавил,типо как в майстате же есть,этим вдохнавился */}
+        <View style={styles.statsContainer}>
+          <StatCard icon="checkmark-circle" color="#10B981" label="Resolved" value={stats.resolved} />
+          <StatCard icon="time" color="#F59E0B" label="Pending" value={stats.pending} />
+          <StatCard icon="warning" color="#EF4444" label="Urgent" value={stats.urgent} />
+        </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Reports</Text>
           {recentReports.map((r, index) => (
