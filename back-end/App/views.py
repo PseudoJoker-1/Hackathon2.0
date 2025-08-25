@@ -244,6 +244,34 @@ class WalletView(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def add_user_to_facility(request):
+    user_id = request.data.get('user_id')
+    facility_id = request.data.get('facility_id')
+    role = request.data.get('role', 'user')
+
+    try:
+        facility = Facility.objects.get(id=facility_id)
+        membership = FacilityMembership.objects.filter(user=request.user, facility=facility).first()
+        if not membership or membership.role not in ['leader', 'admin']:
+            return Response({'error': 'Недостаточно прав'}, status=403)
+
+        user = User.objects.get(id=user_id)
+        membership, created = FacilityMembership.objects.get_or_create(
+            user=user,
+            facility=facility,
+            defaults={'role': role}
+        )
+        if not created:
+            membership.role = role
+            membership.save()
+        return Response({'success': True, 'membership_id': membership.id})
+    except User.DoesNotExist:
+        return Response({'error': 'Пользователь не найден'}, status=404)
+    except Facility.DoesNotExist:
+        return Response({'error': 'Фасилити не найден'}, status=404)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def redeem_product(request, product_id):
     user = request.user
     try:
