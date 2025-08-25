@@ -30,7 +30,8 @@ const QRScannerScreen = () => {
   const handleBarCodeScanned = ({data} : BarcodeScanningResult)=>{
     setScanned(true)
     
-    if(data.includes("http://localhost:8081/report")){
+    // if(data.includes("http://localhost:8081/report")){
+    if(data.includes("https://django-api-1082068772584.us-central1.run.app/report")){
       router.push("/report")
     }
     else{
@@ -98,7 +99,7 @@ const QRScannerScreen = () => {
                 <View style={[styles.corner, styles.bottomRight]} />
                 
                 {/* Анимированная линия сканирования */}
-                {!scanned && <View style={styles.scanLine} />}
+                {/* {!scanned && <View style={styles.scanLine} />} */}
               </View>
               
               <View style={[styles.overlaySection, { width: (width - SCAN_AREA_SIZE) / 2 }]} />
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   overlaySection: {
     backgroundColor: "rgba(0, 0, 0, 0.6)",

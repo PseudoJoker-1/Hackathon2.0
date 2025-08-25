@@ -51,6 +51,7 @@ function ShopScreen() {
     const fetchData = async()=>{
       try{
         const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+        // const API_URL = 'http://localhost:8000'
         const [userResponse,productsResponse] = await Promise.all([
           axios.get(`${API_URL}${ENDPOINTS.USER_PROFILE}`),
           axios.get(`${API_URL}${ENDPOINTS.REWARDS}`)
@@ -129,7 +130,7 @@ function ShopScreen() {
           {filteredProducts?.map((item) => (
             <View key={item.name} style={styles.itemCard}>
               <View style={[styles.itemIcon, { backgroundColor: `${colorMap[item.name as keyof typeof colorMap] || '#ccc'}20` }]}> 
-                <Ionicons name={iconMap[item.name as keyof typeof iconMap] || 'cube' } size={24} color={colorMap[item.name as keyof typeof colorMap] || '#000'}/>
+                <Ionicons name={iconMap[item.name as keyof typeof iconMap] || 'qr' } size={24} color={colorMap[item.name as keyof typeof colorMap] || '#000'}/>
               </View>
               <Text style={styles.itemName}>{item.label}</Text>
               <Text style={styles.itemDescription}>Reward</Text>

@@ -27,7 +27,8 @@ const withAuthProtection = (Component: React.ComponentType) => {
         return false
       }
       try{
-        const res = await axios.post('http://localhost:8000/api/token/refresh/',{
+        // const res = await axios.post('http://localhost:8000/api/token/refresh/',{
+        const res = await axios.post('https://django-api-1082068772584.us-central1.run.app/api/token/refresh/',{
           refresh,
         })
     

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import client from '@/utils/api/client'
 import withAuthProtection from '@/components/common/ProtectedRoute'
+import { useSearchParams } from 'expo-router/build/hooks'
 
 const issueTypes = [
   {
@@ -25,13 +26,13 @@ const issueTypes = [
     color:'#14B8A6',
   },
   {
-    id:'wifi',
+    id:'internet',
     name:'WiFi/Internet',
     icon:'wifi',
     color:'#8B5CF6',
   },
   {
-    id:'hvac',
+    id:'heating',
     name:'Heating/Cooling',
     icon:'thermometer',
     color:'#EF4444',
@@ -49,18 +50,40 @@ interface Room {
   number: number
 }
 
+interface Facility {
+  id: number
+  title: string
+}
+
 function ReportScreen() {
   const [selectedIssue,setSelectedIssue] = useState<string | null>(null)
   const [rooms,setRooms] = useState<Room[]>([])
   const [roomId,setRoomId] = useState<number | null>(null)
   const [description,setDescription] = useState('')
-  const [loading,setLoading] = useState(true)
+  // const [loading,setLoading] = useState(true) если вернуть это, убрать из useEffect fetchRooms ниже
+  const [loading,setLoading] = useState(false) 
+  // const [selectedFacility,setSelectedFacility] = useState<{id:number, name:string} | null>(null)
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null)
+  const searchParams = useSearchParams()
+  const facilityId = searchParams.get('facilityId')
 
   useEffect(()=>{
+    if (!facilityId) return; // Если фасилити не выбрано, не загружаем комнаты
+
     const fetchRooms = async()=>{
+      setLoading(true)
       try{
-        const response = await client.get('/api/rooms/')
+        // console.log(.id)
+        const response = await client.get ('/api/rooms/', {
+          params: { facility_id: facilityId }
+        });
+        console.log('Rooms response:', response.data)
+
+
         setRooms(response.data)
+
+        // const response = await client.get('/api/rooms/')
+        // setRooms(response.data)
       }
       catch(error){
         console.error('Failed to load rooms:',error)
@@ -71,7 +94,7 @@ function ReportScreen() {
       }
     }
     fetchRooms()
-  },[])
+  },[facilityId, selectedFacility])
   const handleSubmit = async()=>{
     if(!selectedIssue || !roomId || !description){
       Alert.alert('Missing Information','Please fill in all fields')
@@ -120,10 +143,10 @@ function ReportScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.label}>Room</Text>
+        <Text style={styles.label}>Rooms</Text>
         {rooms.map((room,index)=>(
           <TouchableOpacity key={index} style={[styles.roomOption,roomId == room.id && styles.roomSelected,]} onPress={()=> setRoomId(room.id)}>
-            <Text style={styles.roomText}>Room {room.number}</Text>
+            <Text style={styles.roomText}>{room.name}</Text>
           </TouchableOpacity>
         ))}
         <Text style={styles.label}>Description</Text>

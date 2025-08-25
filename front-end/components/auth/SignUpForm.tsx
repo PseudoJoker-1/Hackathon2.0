@@ -6,6 +6,7 @@ import axios from 'axios'
 
 export default function SignUpForm({ router }:{ router: any }){
   const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+  // const BASE_URL = 'http://localhost:8000'
   const [name, setName] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')

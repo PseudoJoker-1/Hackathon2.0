@@ -27,6 +27,7 @@ export const PointsProvider = ({children}:{children: React.ReactNode })=>{
         return
       }
       const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+      // const API_URL = 'http://localhost:8000'
       const response = await axios.get(`${API_URL}${ENDPOINTS.USER_PROFILE}`,{
         headers: { Authorization: `Bearer ${token}` }
       })

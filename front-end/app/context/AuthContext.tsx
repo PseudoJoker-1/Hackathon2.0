@@ -37,11 +37,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode }> = ({ children 
   const login = async(email:string, password:string)=>{
     try{
       const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+      // const API_URL = 'http://localhost:8000'
       const response = await axios.post(`${API_URL}${ENDPOINTS.LOGIN}`,{ email,password})
       const { access,refresh } = response.data
       await AsyncStorage.setItem('access', access)
       await AsyncStorage.setItem('refresh', refresh)
       setIsAuthenticated(true)
+      console.log('Login successful, navigating to main screen')
       router.replace('/')
     }
     catch(error:any){

@@ -2,6 +2,7 @@ import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+// export const API_URL = 'http://localhost:8000'
 const client = axios.create({
   baseURL: API_URL,
   timeout: 10000,

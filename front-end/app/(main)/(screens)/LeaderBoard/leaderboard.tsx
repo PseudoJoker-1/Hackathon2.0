@@ -23,6 +23,7 @@ const LeaderboardScreen = () => {
       try{
         const token = await AsyncStorage.getItem('access')
         const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+        // const BASE_URL = 'http://localhost:8000'
         const response = await axios.get(`${BASE_URL}/api/leaderboard/`,{
           headers: {Authorization: `Bearer ${token}`},
         })

@@ -24,7 +24,7 @@ export default function SplashScreen() {
         <View style={styles.logoContainer}>
           <Ionicons name="school" size={80} color="#FFFFFF" />
         </View>
-        <Text style={styles.title}>Coventry Campus</Text>
+        <Text style={styles.title}>Jonde</Text>
         <Text style={styles.subtitle}>Excellence in Education</Text>
       </View>
       <Text style={styles.copyright}>© 2025 Con. All rights reserved.</Text>

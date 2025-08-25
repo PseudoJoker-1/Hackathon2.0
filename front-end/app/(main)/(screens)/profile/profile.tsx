@@ -29,6 +29,7 @@ function ProfileScreen() {
   const fetchProfile = async()=>{
     const token = await AsyncStorage.getItem('access')
     const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+    // const API_URL = 'http://localhost:8000'
     try{
       const [meRes,reportsRes] = await Promise.all([
         axios.get(`${API_URL}/api/me/`,

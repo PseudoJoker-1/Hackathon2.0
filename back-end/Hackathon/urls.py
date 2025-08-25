@@ -46,5 +46,6 @@ urlpatterns = [
     path('api/my-reports/', my_reports, name='my-reports'),
     path('api/',include('App.appurls')),
     path("api/create_lobby/", views.create_lobby, name="create_lobby"),
+    path("api/facilities/mine/", views.FacilityViewSet.as_view({'get': 'mine'}), name='my-facilities')
     # path('api/reports/', include('reports.appurls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

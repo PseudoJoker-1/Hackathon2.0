@@ -11,7 +11,7 @@ interface Report{
   report_type: string
   description: string
   status: string
-  room: number
+  room: {"id": number, "name": string}
 }
 const statusColors: Record<string, string> ={
   pending: '#F59E0B',
@@ -70,7 +70,7 @@ export default function AdminsScreen() {
         {reports.map((report)=>(
           <View key={report.id} style={styles.reportCard}>
             <View style={styles.headerRow}>
-              <Text style={styles.reportTitle}>{report.report_type}</Text>
+              <Text style={styles.reportTitle}>{report.room_name} - {report.report_type}</Text>
               <View style={[styles.statusBadge,{backgroundColor: `${statusColors[report.status]}20` }]}>
                 <Text style={[styles.statusText,{color: statusColors[report.status] }]}>
                   {report.status.toUpperCase()}

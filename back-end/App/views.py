@@ -106,7 +106,7 @@ def create_lobby(request):
 
     with transaction.atomic():
         ser = FacilityCreateSerializer(
-            data={"title": title, "organization_id": organization_id},
+            data={"name": title, "organization_id": organization_id},
             context={"request": request},
         )
         ser.is_valid(raise_exception=True)
@@ -122,7 +122,7 @@ def create_lobby(request):
             "message": "Lobby created",
             "facility": {
                 "id": str(facility.id),
-                "title": facility.title,
+                "title": facility.name,
                 "is_organization": facility.organization_id is not None,
             },
             "rooms_created": len(rooms_list),
@@ -130,19 +130,36 @@ def create_lobby(request):
         status=status.HTTP_201_CREATED,
     )
 class RoomViewSet(viewsets.ModelViewSet):
+    # добавлена сортировка при выборе фасилити будет отображать не все комнаты, а только те что связаны с фасилити
     permission_classes = [IsAuthenticated]
     queryset = Rooms.objects.all()
     serializer_class = RoomSerializer
+    def get_queryset(self):
+        user = self.request.user
+        facility_id = self.request.query_params.get("facility_id")
+        if facility_id:
+            return Rooms.objects.filter(facility_id=facility_id)
+        # return super().get_queryset()
+        return Rooms.objects.none()
 
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
+    #     context['request'] = self.request
+    #     return context
+
+    def get_queryset(self):
+        facility_id = self.request.query_params.get("facility_id")
+        user = self.request.user
+        query_set = Report.objects.all()
+        if facility_id:
+            query_set = query_set.filter(facility_id=facility_id)
+        # return super().get_queryset()
+        return query_set.order_by('-id')
 
 class ProductVS(ModelViewSet):
     queryset = Product.objects.all()

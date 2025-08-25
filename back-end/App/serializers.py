@@ -83,16 +83,39 @@ class RoomSerializer(serializers.ModelSerializer):
         # fields = ['id', 'number']
         fields = ['id', 'facility', 'name']
 
-class ReportSerializer(serializers.ModelSerializer):
+# class ReportSerializer(serializers.ModelSerializer):
     
+#     class Meta:
+#         model = Report
+#         fields = '__all__'
+#         read_only_fields = ['user','user_name']
+
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         room = validated_data['room']
+#         facility = room.facility
+#         validated_data['user'] = self.context['request'].user
+#         validated_data['user_name'] = self.context['request'].user.username
+#         validated_data['facility'] = facility
+#         print(validated_data)
+#         return super().create(validated_data)
+
+class ReportSerializer(serializers.ModelSerializer):
+    room_name = serializers.CharField(source='room.name', read_only=True)
     class Meta:
         model = Report
         fields = '__all__'
-        read_only_fields = ['user','user_name']
+        read_only_fields = ['user','user_name','facility']
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        validated_data['user_name'] = self.context['request'].user.username
+        user = self.context['request'].user
+        room = validated_data.get('room')
+        if isinstance(room, int):  # если пришёл ID
+            room = Rooms.objects.get(id=room)
+        validated_data['room'] = room
+        validated_data['facility'] = room.facility
+        validated_data['user'] = user
+        validated_data['user_name'] = user.username
         return super().create(validated_data)
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -111,7 +134,7 @@ class FacilityCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Facility
-        fields = ("id", "title", "organization_id", "is_organization", "created_at")
+        fields = ("id", "name", "organization_id", "is_organization", "created_at")
 
     def get_is_organization(self, obj):
         return obj.organization_id is not None
@@ -140,7 +163,7 @@ class FacilityCreateSerializer(serializers.ModelSerializer):
         FacilityMembership.objects.get_or_create(
             user=self.context["request"].user,
             facility=facility,
-            defaults={"role": FacilityMembership.Role.OWNER if facility.owner_id else FacilityMembership.Role.LEADER}
+            defaults={"role": FacilityMembership.role if facility.owner_id else FacilityMembership.role}
         )
         return facility
     
@@ -152,7 +175,7 @@ class FacilityListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Facility
-        fields = ("id", "title", "is_organization", "organization", "role", "joined_at", "created_at")
+        fields = ("id", "name", "is_organization", "organization", "role", "joined_at", "created_at")
 
     def get_is_organization(self, obj):
         return obj.organization_id is not None

@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useAuthStore } from '@/features/auth/authSlice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
+import { FlatList, Modal } from 'react-native'
 
 interface Service {
   id: number
@@ -24,51 +25,65 @@ interface Partner {
   description?: string
 }
 
+interface Facility {
+  id: number
+  name: string
+}
+
 export default function ServicesScreen() {
   const [partners, setPartners] = useState<Partner[]>([])
   const [loadingPartners, setLoadingPartners] = useState(true)
   const [loadingAdditional, setLoadingAdditional] = useState(true)
-  const [user,setUser] = useState(null)
+  const [user, setUser] = useState(null)
   const { isAuthenticated } = useAuth()
   const router = useRouter()
+  const [facilities, setFacilities] = useState<Facility[]>([])
+  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null)
 
   const services = [
     {
-      id:1,
-      title:'Админка',
-      icon:'settings',
-      link:'/(main)/(screens)/AdminScreen/admin',
+      id: 1,
+      title: 'Админка',
+      icon: 'settings',
+      link: '/(main)/(screens)/AdminScreen/admin',
     },
     {
-      id:2,
-      title:'Магазин',
-      icon:'cart',
-      link:'/(main)/(screens)/Shop/shop',
+      id: 2,
+      title: 'Магазин',
+      icon: 'cart',
+      link: '/(main)/(screens)/Shop/shop',
     },
     {
-      id:3,
-      title:'Лидерборд',
-      icon:'trophy',
+      id: 3,
+      title: 'Лидерборд',
+      icon: 'trophy',
       link: '/(main)/(screens)/LeaderBoard/leaderboard',
     },
     {
-      id:4,
-      title:'Профиль',
-      icon:'person',
-      link:'/(main)/(screens)/profile/profile',
+      id: 4,
+      title: 'Профиль',
+      icon: 'person',
+      link: '/(main)/(screens)/profile/profile',
     },
     {
-      id:5,
-      title:'Жалобы',
-      icon:'document-text',
-      link:'/(main)/(tabs)/report',
+      id: 5,
+      title: 'Жалобы',
+      icon: 'document-text',
+      link: '/(main)/(tabs)/report',
     },
     {
-      id:6,
-      title:'QR Сканер',
-      icon:'qr-code',
-      link:'/(main)/(tabs)/qr',
+      id: 6,
+      title: 'QR Сканер',
+      icon: 'qr-code',
+      link: '/(main)/(tabs)/qr',
     },
+    {
+      id: 7,
+      title: 'Создать фасилити',
+      icon: 'qr-code',
+      link: '/(main)/(screens)/CreateLobby/create_lobby',
+    }
   ]
   const mockPartners = [
     {
@@ -86,81 +101,123 @@ export default function ServicesScreen() {
   ]
   const additionalServices = [
     {
-      id:1,
-      title:'Поддержка',
-      icon:'help-buoy',
-      description:'Помощь и консультации',
+      id: 1,
+      title: 'Поддержка!!!',
+      icon: 'help-buoy',
+      description: 'Помощь и консультации',
     },
     {
-      id:2,
-      title:'Настройки',
-      icon:'construct',
-      description:'Настройте приложение под себя',
+      id: 2,
+      title: 'Настройки',
+      icon: 'construct',
+      description: 'Настройте приложение под себя',
     },
     {
-      id:3,
-      title:'Уведомления',
-      icon:'notifications',
-      description:'Настройте уведомления',
+      id: 3,
+      title: 'Уведомления',
+      icon: 'notifications',
+      description: 'Настройте уведомления',
     },
   ]
 
-  useEffect(()=>{
-    const getUser = async()=>{
-      try{
+  useEffect(() => {
+    const getUser = async () => {
+      try {
         const token = await AsyncStorage.getItem('access')
-        if(!token){
+        if (!token) {
           router.push('/(auth)/signin')
         }
-        
+
         const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+        // const API_URL = 'http://localhost:8000'
         const resp = await axios.get(`${API_URL}/api/me/`, {
           headers: {
-            Authorization:`Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           }
         })
         console.log(resp.data);
-        
+
         setUser(resp.data)
       }
-      catch(error){
-        if(axios.isAxiosError(error) && error.response?.status == 401){
+      catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status == 401) {
           console.log("токен недействителен")
           // router.push('/(auth)/signin')
         }
-        else{
+        else {
           console.log("get user error", error)
         }
       }
     }
-    const loadPartners = async()=>{
-      try{
+
+    const loadPartners = async () => {
+      try {
         setLoadingPartners(true)
         const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+        // const API_URL = 'http://localhost:8000'
         const token = await AsyncStorage.getItem('access')
-        const response = await client.get(`${API_URL}/api/organizations/`,{headers:{ Authorization: `Bearer ${token}` }})
+        const response = await client.get(`${API_URL}/api/organizations/`, { headers: { Authorization: `Bearer ${token}` } })
         setPartners(response.data)
         setLoadingPartners(false)
       }
-      catch(error){
+      catch (error) {
         Alert.alert('Ошибка', 'Не удалось загрузить данные партнеров')
         setLoadingPartners(false)
       }
     }
     getUser()
     loadPartners()
-    
-    setTimeout(()=>{
+
+    setTimeout(() => {
       setLoadingAdditional(false)
     }, 1000)
   }, [])
 
-  const navigateToAuth = ()=>{
+  const fetchFacilities = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access')
+      // const API_URL = 'http://localhost:8000'
+      const API_URL = 'https://django-api-1082068772584.us-central1.run.app'
+      const resp = await axios.get(`${API_URL}/api/facilities/mine/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setFacilities(resp.data)
+    } catch (error) {
+      console.log('Failed to load facilities', error)
+      Alert.alert('Ошибка', 'Не удалось загрузить ваши фасилити')
+    }
+  }
+
+  const openFacilityModal = () => {
+    fetchFacilities()
+    setModalVisible(true)
+  }
+
+  // const selectFacility = (facility: Facility) => {
+  //   setSelectedFacility(facility)
+  //   setModalVisible(false)
+  //   Alert.alert('Фасилити выбрано', `Вы выбрали фасилити: ${facility.name}`)
+  // }
+
+  const selectFacility = (facility: Facility) => {
+    setSelectedFacility(facility)
+    setModalVisible(false)
+    Alert.alert('Фасилити выбрано', `Вы выбрали фасилити: ${facility.name}`)
+
+    // Переход на страницу ReportScreen с передачей facilityId
+    router.push({
+      pathname: '/(main)/(tabs)/report',
+      params: { facilityId: facility.id.toString() }
+    })
+  }
+
+
+  const navigateToAuth = () => {
     router.push('/(auth)/signin')
   }
 
-  const UserProfileSection = ()=>{
-    if(isAuthenticated && user){
+  const UserProfileSection = () => {
+    if (isAuthenticated && user) {
       return (
         <View style={styles.profileContainer}>
           <View style={styles.avatar}>
@@ -197,9 +254,9 @@ export default function ServicesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.profileCard}
-          onPress={isAuthenticated ? ()=>router.push('/(main)/(screens)/profile/profile') : navigateToAuth}
+          onPress={isAuthenticated ? () => router.push('/(main)/(screens)/profile/profile') : navigateToAuth}
         >
           <UserProfileSection />
         </TouchableOpacity>
@@ -207,7 +264,7 @@ export default function ServicesScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Сервисы</Text>
           <View style={styles.servicesGrid}>
-            {services.map((service)=>(
+            {services.map((service) => (
               <Link key={service.id} href={service.link as Href} asChild>
                 <TouchableOpacity style={styles.serviceCard}>
                   <View style={styles.serviceIconContainer}>
@@ -219,14 +276,62 @@ export default function ServicesScreen() {
             ))}
           </View>
         </View>
+
+        <View style={{ marginTop: 24, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12 }}>
+            Фасилити
+          </Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#3B82F6',
+              padding: 16,
+              borderRadius: 12,
+              alignItems: 'center',
+            }}
+            onPress={openFacilityModal} // твоя функция для открытия модалки выбора
+          >
+            <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>
+              Выбрать фасилити
+            </Text>
+          </TouchableOpacity>
+
+          {selectedFacility && (
+            <Text style={{ marginTop: 12, fontSize: 14, color: '#111827' }}>
+              Выбрано: {selectedFacility.name}
+            </Text>
+          )}
+        </View>
+
+
+
+        <Modal visible={modalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Выберите фасилити</Text>
+              <FlatList
+                data={facilities}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.modalItem} onPress={() => selectFacility(item)}>
+                    <Text style={styles.modalItemText}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+              <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
+                <Text style={styles.modalCloseText}>Закрыть</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Наши партнеры</Text>
           {!loadingPartners ? (
             <View style={styles.additionalServices}>
               {mockPartners.map((item, index) => (
                 <View key={index} style={styles.additionalServiceCard}>
-                  <Image 
-                    source={{ uri: item.logo }} 
+                  <Image
+                    source={{ uri: item.logo }}
                     style={styles.additionalServiceIcon}
                     resizeMode="contain"
                   />
@@ -237,15 +342,15 @@ export default function ServicesScreen() {
                     )}
                   </View>
                 </View>
-            ))}
+              ))}
 
             </View>
           ) : (
             <View style={styles.additionalServices}>
-              {partners.map((partner)=>(
+              {partners.map((partner) => (
                 <View key={partner.id} style={styles.additionalServiceCard}>
-                  <Image 
-                    source={{ uri: partner.logo }} 
+                  <Image
+                    source={{ uri: partner.logo }}
                     style={styles.additionalServiceIcon}
                     resizeMode="contain"
                   />
@@ -263,13 +368,13 @@ export default function ServicesScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Дополнительные услуги</Text>
           {loadingAdditional ? (
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.partnersScroll}
               contentContainerStyle={styles.partnersContainer}
             >
-              {[1,2,3].map((item)=>(
+              {[1, 2, 3].map((item) => (
                 <View key={item} style={styles.partnerCard}>
                   <View style={styles.partnerSkeletonLogo} />
                   <View style={styles.partnerSkeletonText} />
@@ -277,13 +382,13 @@ export default function ServicesScreen() {
               ))}
             </ScrollView>
           ) : (
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.partnersScroll}
               contentContainerStyle={styles.partnersContainer}
             >
-              {additionalServices.map((service)=>(
+              {additionalServices.map((service) => (
                 <TouchableOpacity key={service.id} style={styles.partnerCard}>
                   <View style={styles.additionalServiceIcon}>
                     <Ionicons name={service.icon as any} size={24} color="#F59E0B" />
@@ -517,4 +622,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
   },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContainer: { width: '80%', backgroundColor: 'white', borderRadius: 12, padding: 16, maxHeight: '70%' },
+  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+  modalItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  modalItemText: { fontSize: 16 },
+  modalClose: { marginTop: 12, padding: 12, backgroundColor: '#3B82F6', borderRadius: 8, alignItems: 'center' },
+  modalCloseText: { color: 'white', fontWeight: '600' },
 })
