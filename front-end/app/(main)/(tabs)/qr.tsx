@@ -13,9 +13,6 @@ const SCAN_AREA_SIZE = width * 0.7
 const BORDER_COLOR = "rgb(37, 99, 235)"
 
 const QRScannerScreen = () => {
-
-  // когда нажимаешь на таб qr,то qr открывается 
-  // добавить крестик чтоб можно было закрыть qr ()
   const [permission, requestPermission] = useCameraPermissions()
   const [scanned, setScanned] = useState(false)
   const isFocused = useIsFocused()
@@ -27,7 +24,7 @@ const QRScannerScreen = () => {
     }
   },[permission])
 
-  const handleBarCodeScanned = ({data} : BarcodeScanningResult)=>{
+  const handleBarCodeScanned = ({data}: BarcodeScanningResult)=>{
     setScanned(true)
     
     if(data.includes("http://localhost:8081/report")){
@@ -35,27 +32,23 @@ const QRScannerScreen = () => {
     }
     else{
       Alert.alert(
-        "Внешняя ссылка",
-        "Перейти по внешней ссылке?",
+        "QR-код не распознан",
+        "",
         [
           {
-            text: "Отмена",
-            onPress: () => setScanned(false),
-            style: "cancel"
+            text:"OK",
+            onPress:()=> setScanned(false),
+            style:"cancel"
           },
-          { 
-            text: "Открыть", 
-            onPress: () => {
-              Linking.openURL(data);
-              setScanned(false);
-            }
-          }
         ]
-      );
+      )
     }
   }
-  const handleRescan =()=>{
+  const handleRescan = ()=>{
     setScanned(false)
+  }
+  const handleClose = ()=>{
+    router.back()
   }
 
   if(!permission){
@@ -82,30 +75,24 @@ const QRScannerScreen = () => {
     <View style={styles.container}>
       {isFocused && (
         <CameraView style={styles.camera} facing="back" onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={24} color="white" />
+          </TouchableOpacity>
           <View style={styles.overlay}>
-            {/* Верхняя затемненная область */}
-            <View style={[styles.overlaySection, { height: (height - SCAN_AREA_SIZE) / 2 }]} />
-            
-            {/* Центральная область с рамкой */}
+            <View style={[styles.overlaySection, { height:(height - SCAN_AREA_SIZE) / 2 }]} /> 
             <View style={styles.middleSection}>
-              <View style={[styles.overlaySection, { width: (width - SCAN_AREA_SIZE) / 2 }]} />
-              
+              <View style={[styles.overlaySection, { width:(width - SCAN_AREA_SIZE) / 2 }]} />
               <View style={styles.scanArea}>
-                {/* Уголки рамки */}
                 <View style={[styles.corner, styles.topLeft]} />
                 <View style={[styles.corner, styles.topRight]} />
                 <View style={[styles.corner, styles.bottomLeft]} />
                 <View style={[styles.corner, styles.bottomRight]} />
-                
-                {/* Анимированная линия сканирования */}
-                {!scanned && <View style={styles.scanLine} />}
               </View>
               
-              <View style={[styles.overlaySection, { width: (width - SCAN_AREA_SIZE) / 2 }]} />
+              <View style={[styles.overlaySection, { width:(width - SCAN_AREA_SIZE) / 2 }]} />
             </View>
             
-            {/* Нижняя затемненная область с инструкцией */}
-            <View style={[styles.overlaySection, { height: (height - SCAN_AREA_SIZE) / 2, justifyContent: 'flex-start' }]}>
+            <View style={[styles.overlaySection, { height:(height - SCAN_AREA_SIZE) / 2, justifyContent: 'flex-start' }]}>
               <Text style={styles.instructionText}>
                 Наведите камеру на QR-код
               </Text>
@@ -113,20 +100,11 @@ const QRScannerScreen = () => {
           </View>
         </CameraView>
       )}
-
-      {scanned && (
-        <View style={styles.rescanContainer}>
-          <TouchableOpacity style={styles.rescanButton} onPress={handleRescan}>
-            <Ionicons name="scan" size={24} color="white" />
-            <Text style={styles.rescanText}>Сканировать снова</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
-  );
-};
+  )
+}
 
-export default withAuthProtection(QRScannerScreen);
+export default withAuthProtection(QRScannerScreen)
 
 const styles = StyleSheet.create({
   container: {
@@ -161,6 +139,18 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
   },
   overlay: {
     flex: 1,
@@ -244,4 +234,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-});
+})
