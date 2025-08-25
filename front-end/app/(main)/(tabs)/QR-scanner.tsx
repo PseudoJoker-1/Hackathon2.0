@@ -1,151 +1,180 @@
-// Идеальный UI 
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Button, Dimensions } from "react-native";
-import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
-import { useIsFocused } from "@react-navigation/native";
-// import withAuthProtection from "../context/HomeScreen_protected";
-import withAuthProtection from "@/components/common/ProtectedRoute";
-import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
+import React, { useState, useEffect } from "react"
+import {View,Text,StyleSheet,TouchableOpacity,Dimensions,Alert} from "react-native"
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera"
+import { useIsFocused } from "@react-navigation/native"
+import { useRouter } from "expo-router"
+import * as Linking from "expo-linking"
+import withAuthProtection from "@/components/common/ProtectedRoute"
+import { Ionicons } from "@expo/vector-icons"
+import Feather from '@expo/vector-icons/Feather'
 
-const { width, height } = Dimensions.get("window");
-const squareSize = width * 0.7;
-const borderColor = "rgb(37,99,235)";
+const { width, height } = Dimensions.get("window")
+const SCAN_AREA_SIZE = width * 0.7
+const BORDER_COLOR = "rgb(37, 99, 235)"
 
-function QRScannerScreen() {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [scanned, setScanned] = useState(false);
-  const isFocused = useIsFocused();
-  const router = useRouter();
-  useEffect(() => {
-    if (!permission) {
-      requestPermission();
+const QRScannerScreen = () => {
+  const [permission, requestPermission] = useCameraPermissions()
+  const [scanned, setScanned] = useState(false)
+  const isFocused = useIsFocused()
+  const router = useRouter()
+
+  useEffect(()=>{
+    if(!permission){
+      requestPermission()
     }
-  }, [permission]);
-// Alert
-  // const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    // setScanned(true);
-    // alert(`QR: ${data}`);
-  // };
+  },[permission])
 
-  // Открытие ссылки
-  // const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    // setScanned(true);
-    // Linking.openURL(data).catch(err => {
-      // console.error("Не удалось открыть ссылку:", err);
-    // });
-  // };
-
-  // Переход на экран репорта внутри приложения
-  // const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    // setScanned(true);
-    // const roomId = data.split('=')[1]; // Предполагаем, что QR содержит строку вида "room=101"
-    // if (roomId) {
-      // // router.push(`/report/${roomId}`); // Переход на экран репорта с ID комнаты
-      // // router.push(`/report?room=${roomId}`); // Используем query параметр для передачи ID
-      // router.push(`/report`); // Переход на экран репорта с ID комнаты
-    // } else {
-      // alert("Неверный формат QR кода");
-    // }
-  // };
-
-  const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    setScanned(true);
-
-    if (data.includes("http://localhost:8081/report")) {
-      router.push("/report"); // ⬅️ переход внутри приложения
-    } else {
-      // fallback, если это внешняя ссылка
-      Linking.openURL(data);
+  const handleBarCodeScanned = ({data}: BarcodeScanningResult)=>{
+    setScanned(true)
+    
+    if(data.includes("http://localhost:8081/report")){
+      router.push("/report")
     }
-  };
-
-  if (!permission) {
-    return <Text>Запрос разрешений...</Text>;
+    else{
+      Alert.alert(
+        "QR-код не распознан",
+        "",
+        [
+          {
+            text:"OK",
+            onPress:()=> setScanned(false),
+            style:"cancel"
+          },
+        ]
+      )
+    }
   }
-  if (!permission.granted) {
+  const handleRescan = ()=>{
+    setScanned(false)
+  }
+  const handleClose = ()=>{
+    router.back()
+  }
+
+  if(!permission){
     return (
-      <View>
-        <Text>Нет доступа к камере</Text>
-        <Button title="Разрешить" onPress={requestPermission} />
+      <View style={styles.centered}>
+        <Text>Запрос разрешений...</Text>
       </View>
-    );
+    )
+  }
+
+  if(!permission.granted){
+    return (
+      <View style={styles.centered}>
+        <Feather name="camera-off" size={64} color="#ccc" style={styles.icon} />
+        <Text style={styles.permissionText}>Нет доступа к камере</Text>
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={styles.permissionButtonText}>Предоставить доступ</Text>
+        </TouchableOpacity>
+      </View>
+    )
   }
 
   return (
     <View style={styles.container}>
       {isFocused && (
-        <CameraView
-          style={styles.camera}
-          facing="back"
-          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        >
-          {/* Оверлей с затемнением и прозрачным окном */}
+        <CameraView style={styles.camera} facing="back" onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={24} color="white" />
+          </TouchableOpacity>
           <View style={styles.overlay}>
-            {/* Верхняя тёмная зона */}
-            <View style={[styles.overlayPart, { height: (height - squareSize) / 2, width: "100%" }]} />
-
-            {/* Центральная зона */}
-            <View style={{ flexDirection: "row" }}>
-              {/* Левая тёмная полоса */}
-              <View style={[styles.overlayPart, { width: (width - squareSize) / 2 }]} />
-
-              {/* Прозрачный квадрат с уголками */}
-              <View style={styles.transparentSquare}>
+            <View style={[styles.overlaySection, { height:(height - SCAN_AREA_SIZE) / 2 }]} /> 
+            <View style={styles.middleSection}>
+              <View style={[styles.overlaySection, { width:(width - SCAN_AREA_SIZE) / 2 }]} />
+              <View style={styles.scanArea}>
                 <View style={[styles.corner, styles.topLeft]} />
                 <View style={[styles.corner, styles.topRight]} />
                 <View style={[styles.corner, styles.bottomLeft]} />
                 <View style={[styles.corner, styles.bottomRight]} />
               </View>
-
-              {/* Правая тёмная полоса */}
-              <View style={[styles.overlayPart, { width: (width - squareSize) / 2 }]} />
+              
+              <View style={[styles.overlaySection, { width:(width - SCAN_AREA_SIZE) / 2 }]} />
             </View>
-
-            {/* Нижняя тёмная зона */}
-            <View style={[styles.overlayPart, { height: (height - squareSize) / 2, width: "100%" }]} />
+            
+            <View style={[styles.overlaySection, { height:(height - SCAN_AREA_SIZE) / 2, justifyContent: 'flex-start' }]}>
+              <Text style={styles.instructionText}>
+                Наведите камеру на QR-код
+              </Text>
+            </View>
           </View>
         </CameraView>
       )}
-
-      {scanned && (
-        <Button title="Сканировать снова" onPress={() => setScanned(false)} />
-      )}
     </View>
-  );
+  )
 }
 
-export default withAuthProtection(QRScannerScreen);
+export default withAuthProtection(QRScannerScreen)
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#000",
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+  icon: {
+    marginBottom: 16,
+  },
+  permissionText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  permissionButton: {
+    backgroundColor: BORDER_COLOR,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  permissionButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
   camera: {
     flex: 1,
   },
-  overlay: {
+  closeButton: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "space-between",
+    top: 50,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  overlaySection: {
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
     alignItems: "center",
   },
-  overlayPart: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+  middleSection: {
+    flexDirection: "row",
   },
-  transparentSquare: {
-    width: squareSize,
-    height: squareSize,
-    backgroundColor: "transparent",
+  scanArea: {
+    width: SCAN_AREA_SIZE,
+    height: SCAN_AREA_SIZE,
+    justifyContent: "center",
+    alignItems: "center",
   },
   corner: {
     position: "absolute",
-    width: 30,
-    height: 30,
-    borderColor: borderColor,
+    width: 24,
+    height: 24,
+    borderColor: BORDER_COLOR,
   },
   topLeft: {
     top: 0,
@@ -171,4 +200,38 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     borderRightWidth: 4,
   },
-});
+  scanLine: {
+    height: 2,
+    width: "90%",
+    backgroundColor: BORDER_COLOR,
+    position: "absolute",
+  },
+  instructionText: {
+    color: "white",
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  rescanContainer: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  rescanButton: {
+    flexDirection: "row",
+    backgroundColor: BORDER_COLOR,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 30,
+    alignItems: "center",
+    gap: 8,
+  },
+  rescanText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+})
