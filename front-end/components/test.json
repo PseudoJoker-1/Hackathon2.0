@@ -1,7 +1,8 @@
 {
     "id": "id",
     "username": "string", 
-    "name": "string", 
+    "name": "string",
+    "surname":"string",
     "email": "string",
     "passwordHash": "string",
     "role": "user || leader || admin",

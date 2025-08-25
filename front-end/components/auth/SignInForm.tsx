@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -6,44 +6,43 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-} from 'react-native';
-// import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/app/context/AuthContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from 'react-native'
+// import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { useAuth } from '@/app/context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios';
 
 export default function SignInForm({ router }: { router: any }) {
-  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app';  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
-  // const router = useRouter();
+  const BASE_URL = 'https://django-api-1082068772584.us-central1.run.app'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const { login } = useAuth()
 
-  const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  const handleSignIn = async()=>{
+    if(!email || !password){
+      Alert.alert('Error', 'Please fill in all fields')
+      return
     }
-    const url = `${BASE_URL}/api/token/`;
-    try {
-      const res = await axios.post(
-        url,
-        { email, password }, // Данные передаются вторым параметром
+    const url = `${BASE_URL}/api/token/`
+    try{
+      const res = await axios.post(url,{email,password},
         {
-          headers: { 'Content-Type': 'application/json' }, // Заголовки
+          headers: {
+            'Content-Type':'application/json',
+          },
         }
-      );
+      )
   
-      // Проверяем успешность запроса
-      const { access, refresh } = res.data; // Данные находятся в res.data
-      await AsyncStorage.setItem('access', access);
-      await AsyncStorage.setItem('refresh', refresh);
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Ошибка запроса:', error);
-      Alert.alert('Ошибка', 'Проверь подключение к серверу или данные для входа');
+      const { access, refresh } = res.data
+      await AsyncStorage.setItem('access', access)
+      await AsyncStorage.setItem('refresh', refresh)
+      router.replace('(main)/(tabs)')
+    }
+    catch(error){
+      console.error('Ошибка запроса',error)
+      Alert.alert('Ошибка','Проверь подключение к серверу или данные для входа')
     }
   };
 
