@@ -5,13 +5,35 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 import random, string
 from datetime import timedelta
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+from .models import User
 
-    
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'role', 'is_admin', 'facility']
+        fields = ['id', 'email', 'username', 'password', 'role', 'is_admin']
+
+class FacilitySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = ['id', 'name', 'logo', 'organization_id', 'role']
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        return token
+
+    def validate(self, attrs):
+        user = User.objects.filter(email=attrs['email']).first()
+        if user and user.check_password(attrs['password']):
+            data = super().validate({'username': user.username, 'password': attrs['password']})
+            return data
+        raise serializers.ValidationError('No active account found with the given credentials')
+
 
 class WalletSerializer(serializers.ModelSerializer):
     facility_name = serializers.CharField(source='facility.name', read_only=True)

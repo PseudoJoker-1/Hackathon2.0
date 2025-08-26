@@ -7,8 +7,8 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import UniqueConstraint   
 from django.db.models import Q
-
-
+# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+# from rest_framework import serializers
 
 class User(AbstractUser):
     class Role(models.TextChoices):
