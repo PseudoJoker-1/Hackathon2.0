@@ -13,12 +13,16 @@
         "joinedAt": "timestamp"
       }
     ],
-    "userRooms":[
+    "userFacility":[
       {
         "id": "id",
         "title": "string",
         "role":"user || leader",
         "isOrganization": false,
+        "rooms":{
+          "id":"1",
+          "title":"string"
+        },
         "reports":[
           {
             "id": "id",

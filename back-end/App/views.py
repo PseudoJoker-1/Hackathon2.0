@@ -1,30 +1,83 @@
-from django.shortcuts import render
-from rest_framework.viewsets import ModelViewSet
-from .models import *
-from .serializers import *
-from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.response    import Response
-from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404, redirect
-from .models import Rooms, Report
-from .forms import ReportForm
-from rest_framework import viewsets
-from .serializers import RoomSerializer, ReportSerializer
-from django.http import JsonResponse
-import uuid
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes, action, api_view
-from django.utils.timesince import timesince
+# from django.shortcuts import render
+# from rest_framework.viewsets import ModelViewSet
+# from .models import *
+# from .serializers import *
+# from rest_framework.permissions import IsAuthenticated
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework import filters, status
+# from rest_framework_simplejwt.views import TokenObtainPairView
+# from rest_framework.response    import Response
+# from rest_framework.views import APIView
+# from django.shortcuts import get_object_or_404, redirect
+# from .models import Rooms, Report
+# from .forms import ReportForm
+# from rest_framework import viewsets
+# from .serializers import RoomSerializer, ReportSerializer
+# from django.http import JsonResponse
+# import uuid
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework.decorators import api_view, permission_classes, action, api_view
+# from django.utils.timesince import timesince
+# from datetime import datetime
+# from django.db.models import Prefetch
+# from django.db import transaction
+# from rest_framework import generics, permissions
+# from .models import Facility, FacilityMembership
+
+# from App.models import Facility, Rooms
+
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.http import JsonResponse
+# from django.utils.timesince import timesince
+# from datetime import datetime
+# from django.db.models import Prefetch
+# from django.db import transaction
+
+# from rest_framework import viewsets, status, generics, permissions
+# from rest_framework.viewsets import ModelViewSet
+# from rest_framework.views import APIView
+# from rest_framework.decorators import api_view, permission_classes, action
+# from rest_framework.response import Response
+# from rest_framework_simplejwt.views import TokenObtainPairView
+
+# from .models import User, Wallet, Report, Product, Redeem, Facility, Rooms, FacilityMembership, Organization
+# from .serializers import (
+#     UserSerializer, RoomSerializer, ReportSerializer, ProductSerializer,
+#     WalletSerializer, RedeemSerializer, FacilitySimpleSerializer,
+#     FacilityListSerializer, FacilityCreateSerializer, OrganizationSerializer,
+#     MyTokenObtainPairSerializer
+# )
+
 from datetime import datetime
-from django.db.models import Prefetch
+import uuid
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.utils.timesince import timesince
 from django.db import transaction
+from django.db.models import Prefetch
 
+from rest_framework import viewsets, status, generics, permissions
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from App.models import Facility, Rooms
-
+from .models import (
+    User, Wallet, Report, Product, Redeem, Facility, Rooms,
+    FacilityMembership, Organization
+)
+from .serializers import (
+    SendCodeSerializer, VerifyCodeSerializer, UserSerializer, RoomSerializer, ReportSerializer, ProductSerializer,
+    WalletSerializer, RedeemSerializer, FacilitySimpleSerializer,
+    FacilityListSerializer, FacilityCreateSerializer, OrganizationSerializer,
+    MyTokenObtainPairSerializer
+)
+from .forms import ReportForm
 
 # Create your views here.
 def index(request):
@@ -58,6 +111,15 @@ class CurrentUserView(APIView):
 class UserVS(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class MyFacilitiesView(generics.ListAPIView):
+    serializer_class = FacilitySimpleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Facility.objects.filter(memberships__user=user)
+
 
 
 @api_view(['POST'])
@@ -199,6 +261,8 @@ class LeaderboardView(APIView):
 
         return Response(data_sorted)
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class FacilityViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

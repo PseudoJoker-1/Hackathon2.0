@@ -69,6 +69,12 @@ export default function ServicesScreen() {
       icon:'qr-code',
       link:'/(main)/(tabs)/qr',
     },
+    {
+      id: 7,
+      title: 'Создать фасилити',
+      icon: 'qr-code',
+      link: '/(main)/(screens)/CreateLobby/createFacility',
+    },
   ]
   const mockPartners = [
     {
