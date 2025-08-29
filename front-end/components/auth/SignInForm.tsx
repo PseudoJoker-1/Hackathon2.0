@@ -34,9 +34,6 @@ export default function SignInForm({ router }:{ router:any }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity style={styles.backButton} onPress={()=>{router.back()}}>
-          <Ionicons name="chevron-back" size={24} color="#1E3A8A" />
-        </TouchableOpacity>
         <View style={styles.formContainer}>
           <View style={styles.header}>
             <Text style={styles.welcomeText}>Welcome back!</Text>
