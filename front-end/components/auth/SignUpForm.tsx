@@ -32,50 +32,50 @@ export default function SignUpForm({ router }:{ router:any }){
       setUsers(response.data)
     }
     catch(error){
-      console.error('Error fetching users:',error)
+      console.error('ошибка получение данных',error)
     }
   }
-  const validateField = (name:string,value:string)=>{
+  const validateField = (name:string, value:string)=>{
     let error = ''
     switch(name){
       case 'username':
-        if(value.length < 4){
-          error = 'Username must be at least 4 characters'
+        if(value.length < 4) {
+          error = 'Имя пользователя должно содержать не менее 4 символов'
         }
         else if(users.some(user => user.username == value)){
-          error = 'Username already taken'
+          error = 'Имя пользователя уже занято'
         }
       break
       case 'name':
       case 'surname':
         if(value.length < 4){
-          error = 'Must be at least 4 characters'
+          error = 'Должно быть не менее 4 символов'
         }
       break
       case 'email':
         if(value.length <= 6 || !value.includes('@') || !value.includes('.')){
-          error = 'Invalid email address'
+          error = 'Некорректный адрес электронной почты'
         }
         else if(users.some(user => user.email == value)){
-          error = 'Email already registered'
+          error = 'Электронная почта уже зарегистрирована'
         }
       break
       case 'password':
         if(value.length < 8){
-          error = 'Password must be at least 8 characters'
+          error = 'Пароль должен содержать не менее 8 символов'
         }
-        else if(!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/.test(value)){
-          error = 'Must include uppercase, lowercase, number and special character'
+        else if(!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/.test(value)) {
+          error = 'Пароль должен содержать заглавные и строчные буквы, цифры и специальные символы'
         }
       break
       case 'confirmPassword':
         if(value !== formData.password){
-          error = 'Passwords do not match'
+          error = 'Пароли не совпадают'
         }
       break
     }
-    setErrors((prev)=>({ ...prev, [name]: error }))
-    return error == ''
+    setErrors((prev) => ({ ...prev, [name]: error }));
+    return error == '';
   }
 
   const handleChange = (name: string, value: string) => {
@@ -97,18 +97,18 @@ export default function SignUpForm({ router }:{ router:any }){
     Keyboard.dismiss()
     
     if(!validateForm()){
-      Alert.alert('Error','Please fix the errors in the form')
+      Alert.alert('Error','пожалуйста,исправьте ошибки в форме')
       return
     }
     try{
       const res = await axios.post(`${BASE_URL}/api/send-code/`,{ email:formData.email })
       if(res.status == 200){
         setShowCode(true)
-        Alert.alert('Success', 'Verification code sent to your email')
+        Alert.alert('Success', 'код подтверждения отправлен на вашу электронную почту')
       }
     }
     catch(error:any){
-      Alert.alert('Error',error.response?.data?.message || 'Failed to send verification code')
+      Alert.alert('Error',error.response?.data?.message || 'не удалось отправить код подтверждения')
     }
   }
   const loginAndSaveTokens = async()=>{
@@ -128,14 +128,14 @@ export default function SignUpForm({ router }:{ router:any }){
       }
     }
     catch(error){
-      Alert.alert('Error','Failed to login automatically')
+      Alert.alert('Error','не удалось войти автоматически')
     }
   }
   const handleRegister = async()=>{
     if(!validateForm() || !formData.code){
       console.log('no1');
       
-      Alert.alert('Error','Please fill all fields correctly')
+      Alert.alert('Error','пожалуйста, заполните все поля корректно')
       return
     }
     try{
@@ -159,7 +159,7 @@ export default function SignUpForm({ router }:{ router:any }){
     catch(error:any){
       console.log('no2');
       
-      Alert.alert('Error',error.response?.data?.message || 'Registration failed')
+      Alert.alert('Error',error.response?.data?.message || 'регистрация не удалась')
     }
   }
 
