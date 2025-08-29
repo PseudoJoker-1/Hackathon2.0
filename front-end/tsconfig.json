@@ -15,5 +15,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "features/auth/authSlice.js", "features/report/reportSlice.js", "utils/api/client.js"  ]
+, "features/auth/authSlice.js", "features/report/reportSlice.js", "utils/api/client.js", "components/auth/SignInForm.jsx", "app/(main)/(screens)/CreateLobby/createFacility.tsx"  ]
 }

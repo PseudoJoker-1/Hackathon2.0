@@ -1,40 +1,30 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { Ionicons } from '@expo/vector-icons'
 import HomeScreen from '@/app/(main)/(tabs)/index'
-import ShopScreen from '@/app/(main)/(tabs)/shop'
-import LeaderboardScreen from '@/app/(main)/(tabs)/leaderboard'
-import ProfileScreen from '@/app/(main)/(tabs)/profile'
+import ShopScreen from '@/app/(main)/(screens)/Shop/shop'
+import LeaderboardScreen from '@/app/(main)/(screens)/LeaderBoard/leaderboard'
+import ProfileScreen from '@/app/(main)/(screens)/profile/profile'
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator()
 
 export const TabBar = () => {
+  // Карта иконок для табов
+  const tabIcons = {
+    home: 'home',
+    report: 'alert-circle',
+    leaderboard: 'trophy',
+    shop: 'bag',
+    profile: 'person',
+    admin: 'shield-checkmark'
+  }
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: any;
-
-          if (route.name === 'home'){
-            iconName = focused ? 'home' : 'home';
-          }
-          else if(route.name === 'report'){
-            iconName = focused ? 'alert-circle' : 'alert-circle'
-          }
-          else if (route.name === 'leaderboard') {
-            iconName = focused ? 'trophy' : 'trophy';
-          }
-          else if (route.name === 'shop') {
-            iconName = focused ? 'bag' : 'bag';
-          }
-          else if (route.name === 'profile') {
-            iconName = focused ? 'person' : 'person';
-          }
-          else if (route.name === 'admin'){
-            iconName = focused  ? 'shield-checkmark' : 'shield-checkmark'
-          }
-          
-
-          return <Ionicons name={iconName} size={size} color={color} />;
+        // Показываем иконку для каждой вкладки
+        tabBarIcon: ({focused,color,size})=>{
+          const iconName = tabIcons[route.name as keyof typeof tabIcons] || 'cube'
+          return <Ionicons name={iconName as any} size={size} color={color} />
         },
         tabBarActiveTintColor: '#1E3A8A',
         tabBarInactiveTintColor: '#6B7280',
@@ -50,10 +40,10 @@ export const TabBar = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Leaderboard" component={LeaderboardScreen} />
-      <Tab.Screen name="Shop" component={ShopScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="home" component={HomeScreen} />
+      <Tab.Screen name="leaderboard" component={LeaderboardScreen} />
+      <Tab.Screen name="shop" component={ShopScreen} />
+      <Tab.Screen name="profile" component={ProfileScreen} />
     </Tab.Navigator>
-  );
-};
+  )
+}

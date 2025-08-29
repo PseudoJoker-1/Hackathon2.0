@@ -5,64 +5,42 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 import random, string
 from datetime import timedelta
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+from .models import User
 
-class DocumentSerializer(serializers.ModelSerializer):
-    author = serializers.SerializerMethodField()
-    class Meta:
-        model = Document
-        fields = '__all__'
-    read_only_fields = ['id', 'create_date', 'signed_at', 'vacation_days','author']
-    vacation_start_date = serializers.DateField(
-    input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y']
-    )
-    vacation_end_date = serializers.DateField(
-        input_formats=['%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y']
-    )
-    
-    
-    def get_author(self, obj):
-        return obj.author.username if obj.author else None
-    def create(self, validated_data):
-        user = self.context['request'].user
-        if validated_data.get('vacation_start_date') and validated_data.get('vacation_end_date'):
-            if validated_data['vacation_start_date'] > validated_data['vacation_end_date']:
-                raise serializers.ValidationError("Дата начала отпуска не может быть позже даты окончания отпуска.")
-
-            else:
-                num_days = (validated_data['vacation_end_date'] - validated_data['vacation_start_date']).days + 1
-                
-                if user.vacation_days_left < num_days:
-                    raise serializers.ValidationError(f"Недостаточно выходных дней. Осталось: {user.vacation_days_left}, нужно: {num_days}")
-                validated_data['author'] = user
-                return super().create(validated_data)
-
-
-class DocumentHistorySer(serializers.ModelSerializer):
-    class Meta:
-        model = DocumentHistory
-        fields = '__all__'
-
-
-class ApprovalStepSer(serializers.ModelSerializer):
-    class Meta:
-        model = ApprovalStep
-        fields = '__all__'
-
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = '__all__'
-        read_only_fields = ['is_read', 'created_at']
-    
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'FIO', 'role', 'social_score', 'is_admin', 'vacation_days_left']
+        fields = ['id', 'email', 'username', 'password', 'role', 'is_admin']
 
-    
-    
+class FacilitySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = ['id', 'name', 'logo', 'organization_id', 'role']
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        return token
+
+    def validate(self, attrs):
+        user = User.objects.filter(email=attrs['email']).first()
+        if user and user.check_password(attrs['password']):
+            data = super().validate({'username': user.username, 'password': attrs['password']})
+            return data
+        raise serializers.ValidationError('No active account found with the given credentials')
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    facility_name = serializers.CharField(source='facility.name', read_only=True)
+    class Meta:
+        model = Wallet
+        fields = '__all__'
+        read_only_fields = ['user','facility','facility_name']
 
 class SendCodeSerializer(serializers.Serializer):
 
@@ -124,24 +102,43 @@ class VerifyCodeSerializer(serializers.Serializer):
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rooms
-        fields = ['id', 'number']
+        # fields = ['id', 'number']
+        fields = ['id', 'facility', 'name']
+
+# class ReportSerializer(serializers.ModelSerializer):
+    
+#     class Meta:
+#         model = Report
+#         fields = '__all__'
+#         read_only_fields = ['user','user_name']
+
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         room = validated_data['room']
+#         facility = room.facility
+#         validated_data['user'] = self.context['request'].user
+#         validated_data['user_name'] = self.context['request'].user.username
+#         validated_data['facility'] = facility
+#         print(validated_data)
+#         return super().create(validated_data)
 
 class ReportSerializer(serializers.ModelSerializer):
+    room_name = serializers.CharField(source='room.name', read_only=True)
     class Meta:
         model = Report
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['user','user_name','facility']
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        user = self.context['request'].user
+        room = validated_data.get('room')
+        if isinstance(room, int):  # если пришёл ID
+            room = Rooms.objects.get(id=room)
+        validated_data['room'] = room
+        validated_data['facility'] = room.facility
+        validated_data['user'] = user
+        validated_data['user_name'] = user.username
         return super().create(validated_data)
-
-class ScoreTransactionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ScoreTransaction
-        fields = ['id', 'user', 'points', 'description']
-        read_only_fields = ['id']
-
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -152,3 +149,80 @@ class RedeemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Redeem
         field = ['user', 'product', 'redeem_date', 'code']
+
+class FacilityCreateSerializer(serializers.ModelSerializer):
+    organization_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    is_organization = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Facility
+        fields = ("id", "name", "organization_id", "is_organization", "created_at")
+
+    def get_is_organization(self, obj):
+        return obj.organization_id is not None
+
+    def validate(self, attrs):
+        org_id = attrs.pop("organization_id", None)
+        user = self.context["request"].user
+
+        if org_id:
+            try:
+                org = Organization.objects.get(id=org_id)
+            except Organization.DoesNotExist:
+                raise serializers.ValidationError({"organization_id": "Organization not found"})
+            if not org.memberships.filter(user=user).exists():
+                raise serializers.ValidationError({"organization_id": "You are not a member of this organization"})
+            attrs["organization"] = org
+            attrs["owner"] = None
+        else:
+            attrs["owner"] = user
+            attrs["organization"] = None
+
+        return attrs
+
+    def create(self, validated_data):
+        facility = Facility.objects.create(**validated_data)
+        FacilityMembership.objects.get_or_create(
+            user=self.context["request"].user,
+            facility=facility,
+            defaults={"role": FacilityMembership.role if facility.owner_id else FacilityMembership.role}
+        )
+        return facility
+    
+class FacilityListSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    joined_at = serializers.SerializerMethodField()
+    is_organization = serializers.SerializerMethodField()
+    organization = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Facility
+        fields = ("id", "name", "is_organization", "organization", "role", "joined_at", "created_at")
+
+    def get_is_organization(self, obj):
+        return obj.organization_id is not None
+
+    def get_organization(self, obj):
+        if obj.organization_id:
+            return {"id": str(obj.organization_id), "title": obj.organization.title}
+        return None
+
+    def _membership(self, obj):
+        if hasattr(obj, "my_membership") and obj.my_membership:
+            return obj.my_membership[0]
+        user = self.context["request"].user
+        return obj.memberships.filter(user=user).only("role", "joined_at").first()
+
+    def get_role(self, obj):
+        m = self._membership(obj)
+        return m.role if m else None
+
+    def get_joined_at(self, obj):
+        m = self._membership(obj)
+        return m.joined_at if m else None
+    
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = '__all__'
+        read_only_fields = ['created_at']

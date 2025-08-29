@@ -1,13 +1,15 @@
-import React,{useEffect} from 'react';
-import { useReportStore } from './reportSlice';
+import React,{useEffect} from 'react'
+import { useReportStore } from './reportSlice'
 
 
 export const useReports = () => {
-  const { reports, fetchReports } = useReportStore();
+  const { reports,fetchReports } = useReportStore()
   
-  useEffect(() => {
-    fetchReports();
-  }, []);
+  useEffect(()=>{
+    fetchReports()
+  },[])
 
-  return { reports };
-};
+  return {
+    reports,
+  }
+}

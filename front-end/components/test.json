@@ -1,0 +1,39 @@
+{
+    "id": "id",
+    "username": "string", 
+    "name": "string",
+    "surname":"string",
+    "email": "string",
+    "passwordHash": "string",
+    "role": "user || leader || admin",
+    "organizations": [
+      {
+        "organizationId": "id",
+        "role": "user || leader",
+        "joinedAt": "timestamp"
+      }
+    ],
+    "userFacility":[
+      {
+        "id": "id",
+        "title": "string",
+        "role":"user || leader",
+        "isOrganization": false,
+        "rooms":{
+          "id":"1",
+          "title":"string"
+        },
+        "reports":[
+          {
+            "id": "id",
+            "title": "string",
+            "description": "string",
+            "status": "open || in_progress || done",
+            "createdAt": "timestamp"
+          }
+        ],
+        "createdAt": "timestamp"
+      }
+    ],
+    "createdAt": "timestamp"
+  }

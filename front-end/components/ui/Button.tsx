@@ -1,47 +1,30 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native'
 
 interface ButtonProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline';
-  fullWidth?: boolean;
+  title: string
+  onPress: () => void
+  variant?: 'primary' | 'secondary' | 'outline'
+  fullWidth?: boolean
 }
 
-export const Button = ({ 
-  title, 
-  onPress, 
-  variant = 'primary',
-  fullWidth = false
-}: ButtonProps) => {
-  const getVariantStyle = () => {
-    switch (variant) {
-      case 'secondary':
-        return styles.secondary;
-      case 'outline':
-        return styles.outline;
-      default:
-        return styles.primary;
+export const Button = ({title,onPress, variant = 'primary',fullWidth = false}: ButtonProps)=>{
+  const getVariantStyle =()=>{
+    const variantStyles = {
+      'primary': styles.primary,
+      'secondary': styles.secondary,
+      'outline': styles.outline
     }
-  };
+    return variantStyles[variant] || variantStyles.primary
+  }
 
   return (
-    <TouchableOpacity 
-      style={[
-        styles.button, 
-        getVariantStyle(),
-        fullWidth && styles.fullWidth
-      ]} 
-      onPress={onPress}
-    >
-      <Text style={[
-        styles.text,
-        variant === 'outline' ? styles.outlineText : styles.primaryText
-      ]}>
+    <TouchableOpacity style={[styles.button,getVariantStyle(), fullWidth && styles.fullWidth]} onPress={onPress}>
+      <Text style={[styles.text, variant == 'outline' ? styles.outlineText : styles.primaryText]}>
         {title}
       </Text>
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   button: {
@@ -74,4 +57,4 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
   }
-});
+})
